@@ -1,10 +1,10 @@
 from pyrogram import Client, filters
-from pytgcalls import PyTgCalls
-from pytgcalls.types.input_stream import AudioPiped
+import subprocess
+import logging
 from config import is_authorized
 
-# Initialize PyTgCalls
-jukebox = PyTgCalls(Client("music_bot"))
+# Logger initialization
+logger = logging.getLogger(__name__)
 
 # AI Jukebox Mode: Automatically selects songs based on group mood
 jukebox_mode = {}
@@ -27,10 +27,33 @@ async def jukebox_command(client, message):
 async def play_jukebox(client, chat_id):
     if chat_id in jukebox_mode:
         song_url = await get_ai_suggested_song(chat_id)  # Fetch AI-suggested song
-        await jukebox.join_group_call(chat_id, AudioPiped(song_url))
+        await stream_audio(chat_id, song_url)  # Start streaming with FFmpeg
         await client.send_message(chat_id, f"🎶 AI Jukebox is now playing: {song_url}")
 
 async def get_ai_suggested_song(chat_id):
     # Placeholder function to get AI-powered song recommendations
-    # This can be replaced with an actual recommendation system
-    return "https://example.com/song.mp3"
+    # Replace this with an actual recommendation system or service
+    return "https://example.com/song.mp3"  # Example song URL
+
+def stream_audio(chat_id, audio_url):
+    """Streams audio using FFmpeg"""
+    logger.info(f"🎵 Streaming {audio_url} in chat {chat_id}")
+
+    # FFmpeg command for streaming
+    ffmpeg_command = [
+        "ffmpeg",
+        "-re",  # Read input in real-time
+        "-i", audio_url,  # Input URL or file path
+        "-ac", "2",  # Set audio channels (stereo)
+        "-f", "s16le",  # Output format (16-bit PCM)
+        "-ar", "48000",  # Audio sampling rate (48 kHz)
+        "-acodec", "pcm_s16le",  # Audio codec (PCM signed 16-bit little-endian)
+        "-"  # Output to stdout (for streaming)
+    ]
+    
+    try:
+        # Run FFmpeg command to stream the audio
+        subprocess.Popen(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        logger.info(f"✅ Started streaming in chat {chat_id} successfully!")
+    except Exception as e:
+        logger.error(f"❌ Failed to start streaming: {e}")
