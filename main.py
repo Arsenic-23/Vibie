@@ -5,8 +5,8 @@ import threading
 import subprocess
 from flask import Flask
 from pyrogram import Client
-from PyTgCalls import PyTgCalls
-from pytgcalls.types.input_stream import AudioPiped
+from py_tgcalls import PyTgCalls
+from py_tgcalls.types.input_stream import AudioPiped
 from config import API_ID, API_HASH, BOT_TOKEN
 
 # Enable logging
@@ -47,14 +47,14 @@ except ModuleNotFoundError as e:
 # Initialize bot client
 try:
     app_client = Client("music_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
-    pytgcalls = PyTgCalls(app_client)  # Initialize PyTgCalls
+    py_tgcalls = PyTgCalls(app_client)  # Initialize PyTgCalls
     logger.info("✅ Telegram bot initialized successfully!")
 except Exception as e:
     logger.error(f"❌ Failed to initialize bot: {e}")
     sys.exit(1)
 
 # Register handlers
-music_handler.register_handlers(app_client, pytgcalls)
+music_handler.register_handlers(app_client, py_tgcalls)
 admin_handler.register_handlers(app_client)
 ai_chat_handler.register_handlers(app_client)
 
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     # Start bot and PyTgCalls together
     try:
         app_client.start()
-        pytgcalls.start()
+        py_tgcalls.start()
         logger.info("🎵 PyTgCalls started successfully!")
         app_client.idle()  # Keep the bot running
     except Exception as e:
