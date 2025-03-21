@@ -34,14 +34,6 @@ try:
 except FileNotFoundError:
     logger.error("❌ 'handlers/' directory not found! Check deployment.")
 
-# Import handlers
-try:
-    from handlers import music_handler, admin_handler, ai_chat_handler
-    logger.info("✅ Handlers imported successfully!")
-except ModuleNotFoundError as e:
-    logger.error(f"❌ Failed to import handlers: {e}")
-    sys.exit(1)  # Stop execution if handlers are missing
-
 # Initialize bot client
 try:
     app_client = Client("music_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
@@ -49,11 +41,6 @@ try:
 except Exception as e:
     logger.error(f"❌ Failed to initialize bot: {e}")
     sys.exit(1)
-
-# Register handlers
-music_handler.register_handlers(app_client)
-admin_handler.register_handlers(app_client)
-ai_chat_handler.register_handlers(app_client)
 
 # Function to stream audio in voice chat using FFmpeg
 def stream_audio(chat_id, audio_url):
@@ -76,12 +63,22 @@ def stream_audio(chat_id, audio_url):
     except Exception as e:
         logger.error(f"❌ Failed to start streaming: {e}")
 
+# Register handlers
+def register_handlers():
+    from handlers import music_handler, admin_handler, ai_chat_handler
+    music_handler.register_handlers(app_client)
+    admin_handler.register_handlers(app_client)
+    ai_chat_handler.register_handlers(app_client)
+
 if __name__ == "__main__":
     logger.info("🚀 Starting the bot...")
 
     # Start health check server
     threading.Thread(target=run_health_check, daemon=True).start()
-    
+
+    # Register handlers after bot client is initialized
+    register_handlers()
+
     # Start the bot
     try:
         app_client.start()
