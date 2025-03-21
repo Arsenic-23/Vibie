@@ -1,4 +1,4 @@
-pyrogram==2.0.106
+Pyrogram==2.0.106
 tgcrypto
 flask
 aiohttp
@@ -10,3 +10,7 @@ lxml
 requests
 spotipy
 python-dotenv
+pytgcalls==2.1.0
+ffmpeg
+opus
+aiogram
