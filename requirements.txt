@@ -1,5 +1,5 @@
 pyrogram
 tgcrypto
-pytgcalls==0.8.0
+pytgcalls==2.1.0
 aiohttp
 python-dotenv
