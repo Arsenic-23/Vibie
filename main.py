@@ -7,6 +7,33 @@ from flask import Flask
 from pyrogram import Client
 from config import API_ID, API_HASH, BOT_TOKEN
 
+# ✅ Fix PyTgCalls Installation (Permanent Solution)
+def install_pytgcalls():
+    try:
+        import pytgcalls
+        print("✅ PyTgCalls is already installed!")
+    except ImportError:
+        print("🚀 Installing PyTgCalls...")
+        os.system("pip uninstall pytgcalls -y && pip install pytgcalls==0.9.2")
+        print("✅ PyTgCalls installed successfully!")
+
+install_pytgcalls()
+
+# ✅ Ensure system dependencies (ffmpeg, libopus) are installed
+def check_dependencies():
+    required_packages = ["ffmpeg", "libopus0"]
+    for package in required_packages:
+        try:
+            subprocess.run(["dpkg", "-s", package], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            print(f"✅ {package} is installed!")
+        except subprocess.CalledProcessError:
+            print(f"🚀 Installing {package}...")
+            os.system(f"sudo apt install -y {package}")
+
+# Run dependency check (Linux Only)
+if sys.platform.startswith("linux"):
+    check_dependencies()
+
 # Enable logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -27,10 +54,11 @@ if HANDLERS_PATH not in sys.path:
     sys.path.append(HANDLERS_PATH)
     logger.info(f"📂 Added 'handlers/' to sys.path: {HANDLERS_PATH}")
 
-# Check if handlers directory exists before listing files
-if os.path.exists(HANDLERS_PATH):
-    logger.info(f"🔍 Handlers directory contents: {os.listdir(HANDLERS_PATH)}")
-else:
+# Debugging: Print available files in the 'handlers/' folder
+logger.info("🔍 Checking handlers directory contents...")
+try:
+    logger.info(f"Contents: {os.listdir(HANDLERS_PATH)}")
+except FileNotFoundError:
     logger.error("❌ 'handlers/' directory not found! Check deployment.")
 
 # Import handlers
@@ -39,15 +67,15 @@ try:
     logger.info("✅ Handlers imported successfully!")
 except ModuleNotFoundError as e:
     logger.error(f"❌ Failed to import handlers: {e}")
-    sys.exit(1)
+    sys.exit(1)  # Stop execution if handlers are missing
 
-# Clone `relo` if missing (should ideally be done manually)
+# Clone `relo` if it's missing
 if not os.path.exists("relo"):
     subprocess.run(["git", "clone", "https://github.com/ldott/relo.git"], check=True)
 
 # Add `relo` to Python's module path
 sys.path.append(os.path.abspath("relo"))
-from relo import Relo
+from relo import Relo  # Import after adding to path
 
 # Initialize bot client
 try:
@@ -73,4 +101,4 @@ if __name__ == "__main__":
         app_client.run()
     except Exception as e:
         logger.error(f"❌ Bot failed to start: {e}")
-        sys.exit(1)
+        sys.exit(1)  # Exit to prevent restart loops
