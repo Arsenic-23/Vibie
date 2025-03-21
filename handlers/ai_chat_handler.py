@@ -1,3 +1,4 @@
+import openai
 from pyrogram import Client, filters
 from openai import ChatGPT
 from config import OPENAI_API_KEY
