@@ -12,5 +12,4 @@ spotipy
 python-dotenv
 pytgcalls==2.1.0
 ffmpeg
-opus
 aiogram
