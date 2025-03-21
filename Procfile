@@ -1,1 +1,1 @@
-web: python3 main.py
+web: apt-get update && apt-get install -y libopus0 && python main.py
