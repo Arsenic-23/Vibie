@@ -1,20 +1,33 @@
 import os
 
-API_ID = os.getenv("API_ID")  # Set in Railway Environment Variables
-API_HASH = os.getenv("API_HASH")  # Set in Railway Environment Variables
-BOT_TOKEN = os.getenv("BOT_TOKEN")  # Set in Railway Environment Variables
-OWNER_ID = int(os.getenv("OWNER_ID", 0))  # Set in Railway Environment Variables
+# Get API credentials from environment variables or set manually
+API_ID = int(os.getenv("API_ID", "123456"))  # Replace with your API ID
+API_HASH = os.getenv("API_HASH", "your_api_hash_here")  # Replace with your API Hash
+BOT_TOKEN = os.getenv("BOT_TOKEN", "your_bot_token_here")  # Replace with your bot token
 
-MUSIC_QUALITY = "high"  # Options: low, medium, high
-AUTO_RESTART = True  # Auto-restart bot on crash
+# MongoDB for storing user data and playlists
+MONGO_URI = os.getenv("MONGO_URI", "your_mongodb_uri_here")
 
-# Database (for playlists, user settings)
-DB_URL = os.getenv("DB_URL", None)  # Optional database for storing playlists
+# Admins and authorized users
+OWNER_ID = int(os.getenv("OWNER_ID", "123456789"))  # Replace with your Telegram ID
+AUTHORIZED_USERS = [OWNER_ID]  # List of users allowed to use admin commands
 
-# Admin & Auth Users
-AUTH_USERS = [OWNER_ID]  # Add user IDs who can control the bot
-BANNED_USERS = []  # Users who are banned from using the bot
+# Music settings
+MUSIC_QUALITY = os.getenv("MUSIC_QUALITY", "high")  # Options: low, medium, high
+MAX_QUEUE_LENGTH = int(os.getenv("MAX_QUEUE_LENGTH", "50"))  # Maximum songs in queue
 
-# AI Features
-ENABLE_AI_JUKEBOX = True  # AI-based song recommendations
-ENABLE_VOICE_COMMANDS = True  # Hands-free control via voice
+# AI settings
+AI_ENABLED = os.getenv("AI_ENABLED", "True").lower() == "true"  # Enable AI chat?
+VOICE_EFFECTS_ENABLED = os.getenv("VOICE_EFFECTS_ENABLED", "True").lower() == "true"  # Enable voice filters?
+DJ_MODE = os.getenv("DJ_MODE", "False").lower() == "true"  # Enable DJ fade transitions?
+
+# Logging settings
+LOG_CHANNEL = int(os.getenv("LOG_CHANNEL", "-100123456789"))  # Replace with your log channel ID
+DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() == "true"
+
+# Deployment settings
+DEPLOYMENT = os.getenv("DEPLOYMENT", "koyeb")  # Options: koyeb, railway, local
+
+# Function to check if a user is authorized
+def is_authorized(user_id):
+    return user_id in AUTHORIZED_USERS or user_id == OWNER_ID
