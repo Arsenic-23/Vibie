@@ -1,22 +1,23 @@
-from relo_local.relo import Relo
+import os
+import sys
+import logging
+import subprocess
+
 from pyrogram import Client
 from pytgcalls import PyTgCalls
 from config import API_ID, API_HASH, BOT_TOKEN
 from handlers import music_handler, admin_handler, ai_chat_handler
-import logging
-import os
-import sys
-import subprocess
 
 # Step 1: Clone `relo` if it's missing
-if not os.path.exists("relo"):
-    subprocess.run(["git", "clone", "https://github.com/ldott/relo.git"], check=True)
+if not os.path.exists("relo_local"):
+    subprocess.run(["git", "clone", "https://github.com/ldott/relo.git", "relo_local"], check=True)
 
-# Step 2: Add `relo` to Python's module path
-sys.path.append(os.path.abspath("relo"))
+# Step 2: Add `relo_local` to Python's module path
+sys.path.append(os.path.abspath("relo_local"))
 
 # Step 3: Now import Relo
 from relo import Relo
+
 # Enable logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
