@@ -5,8 +5,7 @@ import threading
 import subprocess
 from flask import Flask
 from pyrogram import Client
-from py_tgcalls import PyTgCalls
-from py_tgcalls.types.input_stream import AudioPiped
+import AudioPiped
 from config import API_ID, API_HASH, BOT_TOKEN
 
 # Enable logging
