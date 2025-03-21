@@ -5,34 +5,9 @@ import threading
 import subprocess
 from flask import Flask
 from pyrogram import Client
+from pytgcalls import PyTgCalls
+from pytgcalls.types.input_stream import AudioPiped
 from config import API_ID, API_HASH, BOT_TOKEN
-
-# ✅ Fix PyTgCalls Installation (Permanent Solution)
-def install_pytgcalls():
-    try:
-        import pytgcalls
-        print("✅ PyTgCalls is already installed!")
-    except ImportError:
-        print("🚀 Installing PyTgCalls...")
-        os.system("pip uninstall pytgcalls -y && pip install pytgcalls==0.9.2")
-        print("✅ PyTgCalls installed successfully!")
-
-install_pytgcalls()
-
-# ✅ Ensure system dependencies (ffmpeg, libopus) are installed
-def check_dependencies():
-    required_packages = ["ffmpeg", "libopus0"]
-    for package in required_packages:
-        try:
-            subprocess.run(["dpkg", "-s", package], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            print(f"✅ {package} is installed!")
-        except subprocess.CalledProcessError:
-            print(f"🚀 Installing {package}...")
-            os.system(f"sudo apt install -y {package}")
-
-# Run dependency check (Linux Only)
-if sys.platform.startswith("linux"):
-    check_dependencies()
 
 # Enable logging
 logging.basicConfig(level=logging.INFO)
@@ -69,24 +44,17 @@ except ModuleNotFoundError as e:
     logger.error(f"❌ Failed to import handlers: {e}")
     sys.exit(1)  # Stop execution if handlers are missing
 
-# Clone `relo` if it's missing
-if not os.path.exists("relo"):
-    subprocess.run(["git", "clone", "https://github.com/ldott/relo.git"], check=True)
-
-# Add `relo` to Python's module path
-sys.path.append(os.path.abspath("relo"))
-from relo import Relo  # Import after adding to path
-
 # Initialize bot client
 try:
     app_client = Client("music_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+    pytgcalls = PyTgCalls(app_client)  # Initialize PyTgCalls
     logger.info("✅ Telegram bot initialized successfully!")
 except Exception as e:
     logger.error(f"❌ Failed to initialize bot: {e}")
     sys.exit(1)
 
 # Register handlers
-music_handler.register_handlers(app_client)
+music_handler.register_handlers(app_client, pytgcalls)
 admin_handler.register_handlers(app_client)
 ai_chat_handler.register_handlers(app_client)
 
@@ -96,9 +64,12 @@ if __name__ == "__main__":
     # Start health check server
     threading.Thread(target=run_health_check, daemon=True).start()
     
-    # Start bot
+    # Start bot and PyTgCalls together
     try:
-        app_client.run()
+        app_client.start()
+        pytgcalls.start()
+        logger.info("🎵 PyTgCalls started successfully!")
+        app_client.idle()  # Keep the bot running
     except Exception as e:
         logger.error(f"❌ Bot failed to start: {e}")
         sys.exit(1)  # Exit to prevent restart loops
