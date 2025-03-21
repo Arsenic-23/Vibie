@@ -10,6 +10,6 @@ lxml
 requests
 spotipy
 python-dotenv
-PyTgCalls==2.1.0
+py-tgcalls==1.0.3
 ffmpeg
 aiogram
