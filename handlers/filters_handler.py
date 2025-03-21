@@ -1,0 +1,37 @@
+from pyrogram import Client, filters
+
+# Command: /chipmunk (Apply chipmunk filter)
+@Client.on_message(filters.command("chipmunk") & filters.group)
+async def chipmunk_filter(client, message):
+    await message.reply_text("🐿️ Applying **Chipmunk Effect** to the audio!")
+    # Add logic to apply the filter here.
+
+# Command: /deepvoice (Apply deep voice filter)
+@Client.on_message(filters.command("deepvoice") & filters.group)
+async def deepvoice_filter(client, message):
+    await message.reply_text("🎤 Applying **Deep Voice Effect** to the audio!")
+    # Add logic to apply the filter here.
+
+# Command: /echo (Apply echo effect)
+@Client.on_message(filters.command("echo") & filters.group)
+async def echo_filter(client, message):
+    await message.reply_text("🔊 Applying **Echo Effect** to the audio!")
+    # Add logic to apply the filter here.
+
+# Command: /nightcore (Apply Nightcore effect)
+@Client.on_message(filters.command("nightcore") & filters.group)
+async def nightcore_filter(client, message):
+    await message.reply_text("🎶 Applying **Nightcore Effect** to the audio!")
+    # Add logic to apply the filter here.
+
+# Command: /reverb (Apply reverb effect)
+@Client.on_message(filters.command("reverb") & filters.group)
+async def reverb_filter(client, message):
+    await message.reply_text("🌊 Applying **Reverb Effect** to the audio!")
+    # Add logic to apply the filter here.
+
+# Command: /bassboost (Apply bass boost effect)
+@Client.on_message(filters.command("bassboost") & filters.group)
+async def bassboost_filter(client, message):
+    await message.reply_text("🔉 Applying **Bass Boost Effect** to the audio!")
+    # Add logic to apply the filter here.
