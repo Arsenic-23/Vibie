@@ -7,9 +7,6 @@ from flask import Flask
 from pyrogram import Client
 from config import API_ID, API_HASH, BOT_TOKEN
 
-# Ensure pytgcalls is installed
-os.system("pip install pytgcalls==0.9.2")
-
 # Enable logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -30,11 +27,10 @@ if HANDLERS_PATH not in sys.path:
     sys.path.append(HANDLERS_PATH)
     logger.info(f"📂 Added 'handlers/' to sys.path: {HANDLERS_PATH}")
 
-# Debugging: Print available files in the 'handlers/' folder
-logger.info("🔍 Checking handlers directory contents...")
-try:
-    logger.info(f"Contents: {os.listdir(HANDLERS_PATH)}")
-except FileNotFoundError:
+# Check if handlers directory exists before listing files
+if os.path.exists(HANDLERS_PATH):
+    logger.info(f"🔍 Handlers directory contents: {os.listdir(HANDLERS_PATH)}")
+else:
     logger.error("❌ 'handlers/' directory not found! Check deployment.")
 
 # Import handlers
@@ -43,15 +39,15 @@ try:
     logger.info("✅ Handlers imported successfully!")
 except ModuleNotFoundError as e:
     logger.error(f"❌ Failed to import handlers: {e}")
-    sys.exit(1)  # Stop execution if handlers are missing
+    sys.exit(1)
 
-# Clone `relo` if it's missing
+# Clone `relo` if missing (should ideally be done manually)
 if not os.path.exists("relo"):
     subprocess.run(["git", "clone", "https://github.com/ldott/relo.git"], check=True)
 
 # Add `relo` to Python's module path
 sys.path.append(os.path.abspath("relo"))
-from relo import Relo  # Import after adding to path
+from relo import Relo
 
 # Initialize bot client
 try:
@@ -77,4 +73,4 @@ if __name__ == "__main__":
         app_client.run()
     except Exception as e:
         logger.error(f"❌ Bot failed to start: {e}")
-        sys.exit(1)  # Exit to prevent restart loops
+        sys.exit(1)
