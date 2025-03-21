@@ -10,4 +10,4 @@ lxml
 requests
 spotipy
 python-dotenv
-pytgcalls==0.9.2
+pytgcalls==0.9.1
