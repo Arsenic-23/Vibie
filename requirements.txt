@@ -13,3 +13,4 @@ python-dotenv
 ffmpeg
 aiogram
 yt-dlp
+openai
