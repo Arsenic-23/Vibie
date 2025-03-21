@@ -11,6 +11,9 @@ API_HASH = os.getenv("API_HASH", "your_api_hash")  # Replace with your API Hash
 # Bot token from BotFather
 BOT_TOKEN = os.getenv("BOT_TOKEN", "your_bot_token")
 
+# MongoDB connection (for storing user data, playlists, etc.)
+MONGO_URI = os.getenv("MONGO_URI", "your_mongodb_uri")
+
 # Authorized users (Admin List)
 AUTH_USERS = [int(user) for user in os.getenv("AUTH_USERS", "").split() if user.isdigit()]
 
