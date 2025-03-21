@@ -1,6 +1,6 @@
 pyrogram==2.0.106
 tgcrypto==1.2.5
-tgcalls==3.0.0.dev6
+tgcalls==2.0.0.dev6
 aiohttp==3.8.5
 python-dotenv==1.0.0
 pyaes==1.6.1
