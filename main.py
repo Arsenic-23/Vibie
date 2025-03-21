@@ -1,32 +1,28 @@
 import os
 import sys
-import logging
 import subprocess
-
+import logging
 from pyrogram import Client
-from pytgcalls import PyTgCalls
 from config import API_ID, API_HASH, BOT_TOKEN
 from handlers import music_handler, admin_handler, ai_chat_handler
 
-# Step 1: Clone `relo` if it's missing
-if not os.path.exists("relo_local"):
-    subprocess.run(["git", "clone", "https://github.com/ldott/relo.git", "relo_local"], check=True)
-
-# Step 2: Add `relo_local` to Python's module path
-sys.path.append(os.path.abspath("relo_local"))
-
-# Step 3: Now import Relo
-from relo import Relo
-
-# Enable logging
+# Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Install PyTgCalls manually (fix for Koyeb)
+try:
+    from pytgcalls import PyTgCalls
+except ImportError:
+    logger.info("Installing PyTgCalls...")
+    subprocess.run([sys.executable, "-m", "pip", "install", "py-tgcalls"], check=True)
+    from pytgcalls import PyTgCalls
 
 # Initialize bot client
 app = Client("music_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 call_py = PyTgCalls(app)
 
-# Import handlers
+# Register handlers
 music_handler.register_handlers(app, call_py)
 admin_handler.register_handlers(app, call_py)
 ai_chat_handler.register_handlers(app)
