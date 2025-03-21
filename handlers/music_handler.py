@@ -1,55 +1,48 @@
-import os
-import asyncio
-import subprocess
+import logging
 from pyrogram import Client, filters
-from config import BOT_TOKEN
+from yt_dlp import YoutubeDL
+from main import stream_audio  # Import the new streaming function
 
-# Function to play audio using FFmpeg
-async def play_audio(client: Client, chat_id: int, audio_url: str):
-    try:
-        process = subprocess.Popen(
-            ["ffmpeg", "-re", "-i", audio_url, "-f", "s16le", "-ac", "2", "-ar", "48000", "pipe:1"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL
-        )
+# Enable logging
+logger = logging.getLogger(__name__)
 
-        async for chunk in process.stdout:
-            await client.send_voice(chat_id, chunk, caption="🎵 Now playing...")
+# Configure YouTube Downloader
+ydl_opts = {
+    "format": "bestaudio/best",
+    "noplaylist": True,
+    "quiet": True,
+    "extractaudio": True,
+    "default_search": "ytsearch"
+}
 
-    except Exception as e:
-        print(f"Error playing audio: {e}")
+def get_audio_url(query):
+    """Fetches the best audio URL from YouTube."""
+    with YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(query, download=False)
+        if "entries" in info:
+            info = info["entries"][0]  # Get first result from search
+        return info["url"]
 
-# /play command to fetch and play a song
-@Client.on_message(filters.command("play"))
-async def play_music(client, message):
-    if len(message.command) < 2:
-        await message.reply_text("❌ Please provide a YouTube link or song name!")
-        return
+def register_handlers(app_client):
+    """Registers all music-related handlers."""
 
-    audio_url = message.text.split(" ", 1)[1]  # Extract song URL
-    chat_id = message.chat.id
+    @app_client.on_message(filters.command("play"))
+    async def play_song(client, message):
+        """Handles /play command to stream music."""
+        chat_id = message.chat.id
 
-    await message.reply_text(f"🔄 **Fetching song:** {audio_url}...")
-    await play_audio(client, chat_id, audio_url)  # Play using FFmpeg
+        if len(message.command) < 2:
+            await message.reply_text("❌ Please provide a song name or link!")
+            return
 
-# /skip command to stop the current song
-@Client.on_message(filters.command("skip"))
-async def skip_music(client, message):
-    await message.reply_text("⏭ Skipping current song...")
-    os.system("pkill -9 ffmpeg")  # Kill FFmpeg process to stop audio
+        query = " ".join(message.command[1:])
+        try:
+            audio_url = get_audio_url(query)
+            stream_audio(chat_id, audio_url)  # Call new function to stream
 
-# /stop command to stop all playback
-@Client.on_message(filters.command("stop"))
-async def stop_music(client, message):
-    await message.reply_text("🛑 Stopping playback...")
-    os.system("pkill -9 ffmpeg")  # Kill FFmpeg to stop playback
+            await message.reply_text(f"🎵 Now playing: **{query}**")
+        except Exception as e:
+            logger.error(f"❌ Error playing song: {e}")
+            await message.reply_text("❌ Failed to play this song!")
 
-# /pause command to pause music (Currently not supported via FFmpeg)
-@Client.on_message(filters.command("pause"))
-async def pause_music(client, message):
-    await message.reply_text("⏸ Pause is not supported yet with FFmpeg streaming.")
-
-# /resume command to resume music (Currently not supported via FFmpeg)
-@Client.on_message(filters.command("resume"))
-async def resume_music(client, message):
-    await message.reply_text("▶ Resume is not supported yet with FFmpeg streaming.")
+logger.info("✅ Music handler loaded!")
