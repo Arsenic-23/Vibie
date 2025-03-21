@@ -22,3 +22,7 @@ MAX_QUEUE_SIZE = 50  # Max number of songs in the queue per chat
 
 # Logging (for debugging)
 DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() == "true"
+def is_admin(user_id):
+    # Replace with actual admin checking logic
+    admin_ids = [123456789]  # Add your admin user IDs
+    return user_id in admin_ids
