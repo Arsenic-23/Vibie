@@ -1,5 +1,5 @@
-pyrogram
-tgcrypto
+pyrogram==2.0.106
+tgcrypto==1.2.5
 pytgcalls==2.1.0
-aiohttp
-python-dotenv
+aiohttp==3.8.5
+python-dotenv==1.0.0
