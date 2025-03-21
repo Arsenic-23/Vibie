@@ -4,7 +4,19 @@ from pytgcalls import PyTgCalls
 from config import API_ID, API_HASH, BOT_TOKEN
 from handlers import music_handler, admin_handler, ai_chat_handler
 import logging
+import os
+import sys
+import subprocess
 
+# Step 1: Clone `relo` if it's missing
+if not os.path.exists("relo"):
+    subprocess.run(["git", "clone", "https://github.com/ldott/relo.git"], check=True)
+
+# Step 2: Add `relo` to Python's module path
+sys.path.append(os.path.abspath("relo"))
+
+# Step 3: Now import Relo
+from relo import Relo
 # Enable logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
