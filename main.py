@@ -8,7 +8,7 @@ from pyrogram import Client
 from config import API_ID, API_HASH, BOT_TOKEN
 
 # Ensure pytgcalls is installed
-os.system("pip install pytgcalls==0.9.2")
+os.system("pip install pytgcalls==3.0.0.dev24")
 
 # Enable logging
 logging.basicConfig(level=logging.INFO)
