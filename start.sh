@@ -1,12 +1,8 @@
 #!/bin/bash
 
-echo "Starting the Super Advanced Telegram Music Bot..."
-
-# Load environment variables
-export $(grep -v '^#' .env | xargs)
-
-# Install dependencies
-pip3 install -r requirements.txt
+# Remove any old version and re-clone
+rm -rf relo_local
+git clone https://github.com/ldott/relo.git relo_local
 
 # Start the bot
-python3 main.py
+exec python3 main.py
