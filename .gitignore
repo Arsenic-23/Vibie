@@ -1,5 +1,22 @@
-config.env
+# Byte-compiled / optimized / DLL files
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+
+# Editor & OS-specific files
+*.swp
+*.swo
 .DS_Store
+Thumbs.db
+
+# Logs & databases
+logs/
+*.log
+*.sqlite3
+
+# Configuration secrets (if needed, uncomment and modify)
+# config.ini
