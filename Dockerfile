@@ -1,0 +1,1 @@
+RUN git clone https://github.com/ldott/relo.git /app/relo_local
