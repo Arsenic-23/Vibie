@@ -5,7 +5,6 @@ import threading
 import subprocess
 from flask import Flask
 from pyrogram import Client
-import AudioPiped
 from config import API_ID, API_HASH, BOT_TOKEN
 
 # Enable logging
@@ -46,16 +45,36 @@ except ModuleNotFoundError as e:
 # Initialize bot client
 try:
     app_client = Client("music_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
-    py_tgcalls = PyTgCalls(app_client)  # Initialize PyTgCalls
     logger.info("✅ Telegram bot initialized successfully!")
 except Exception as e:
     logger.error(f"❌ Failed to initialize bot: {e}")
     sys.exit(1)
 
 # Register handlers
-music_handler.register_handlers(app_client, py_tgcalls)
+music_handler.register_handlers(app_client)
 admin_handler.register_handlers(app_client)
 ai_chat_handler.register_handlers(app_client)
+
+# Function to stream audio in voice chat using FFmpeg
+def stream_audio(chat_id, audio_url):
+    logger.info(f"🎵 Streaming {audio_url} in chat {chat_id}")
+    
+    ffmpeg_command = [
+        "ffmpeg",
+        "-re",  # Read input in real-time
+        "-i", audio_url,  # Input URL
+        "-ac", "2",  # Set audio channels
+        "-f", "s16le",  # Output format
+        "-ar", "48000",  # Audio sampling rate
+        "-acodec", "pcm_s16le",  # Audio codec
+        "-"  # Output to stdout
+    ]
+    
+    try:
+        subprocess.Popen(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        logger.info("✅ Audio streaming started successfully!")
+    except Exception as e:
+        logger.error(f"❌ Failed to start streaming: {e}")
 
 if __name__ == "__main__":
     logger.info("🚀 Starting the bot...")
@@ -63,11 +82,10 @@ if __name__ == "__main__":
     # Start health check server
     threading.Thread(target=run_health_check, daemon=True).start()
     
-    # Start bot and PyTgCalls together
+    # Start the bot
     try:
         app_client.start()
-        py_tgcalls.start()
-        logger.info("🎵 PyTgCalls started successfully!")
+        logger.info("🎶 Bot is now running! Use /play to stream music.")
         app_client.idle()  # Keep the bot running
     except Exception as e:
         logger.error(f"❌ Bot failed to start: {e}")
