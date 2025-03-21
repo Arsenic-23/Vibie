@@ -5,7 +5,7 @@ import threading
 import subprocess
 from flask import Flask
 from pyrogram import Client
-from pytgcalls import PyTgCalls
+from PyTgCalls import PyTgCalls
 from pytgcalls.types.input_stream import AudioPiped
 from config import API_ID, API_HASH, BOT_TOKEN
 
