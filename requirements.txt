@@ -5,3 +5,4 @@ pydub
 ffmpeg
 openai
 python-dotenv
+ntplib
