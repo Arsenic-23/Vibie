@@ -1,5 +1,5 @@
 from pyrogram import Client, filters
-from pyrogram.types import Message, VoiceChatStarted, VoiceChatEnded
+from pyrogram.types import Message
 import asyncio
 
 # Dictionary to store the queue for each chat
