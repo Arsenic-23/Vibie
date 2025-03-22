@@ -1,59 +1,43 @@
-import logging
 import asyncio
-import os
-import time
+import logging
 import datetime
-from pyrogram import Client, idle
-from config import API_ID, API_HASH, BOT_TOKEN
+from pyrogram import Client
+import os
 
-# ✅ Force Time Synchronization (Fixes "msg_id is too low" error)
-os.environ["TZ"] = "UTC"
-time.tzset()
-print(f"[INFO] System Time Synced: {datetime.datetime.utcnow()} UTC")
-
-# Import handlers
-from handlers.admin_handler import ban_user, unban_user, ban_all_users
-from handlers.effects_handler import chipmunk_effect, deep_effect, echo_effect
-from handlers.games_handler import puzzle_game, check_puzzle_answer
-from handlers.music_handler import play_music, skip_song, show_queue, stop_music
-
-# Logging setup
+# Enable logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize bot client
+# Load environment variables
+API_ID = int(os.getenv("API_ID"))
+API_HASH = os.getenv("API_HASH")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
+# Initialize Pyrogram Bot
 bot = Client(
-    "MusicBot",
+    "music_bot",
     api_id=API_ID,
     api_hash=API_HASH,
     bot_token=BOT_TOKEN
 )
 
-# Register handlers using the @bot.on_message() decorator if they are functions
-bot.add_handler(ban_user)
-bot.add_handler(unban_user)
-bot.add_handler(ban_all_users)
-bot.add_handler(chipmunk_effect)
-bot.add_handler(deep_effect)
-bot.add_handler(echo_effect)
-bot.add_handler(puzzle_game)
-bot.add_handler(check_puzzle_answer)
-bot.add_handler(play_music)
-bot.add_handler(skip_song)
-bot.add_handler(show_queue)
-bot.add_handler(stop_music)
-
 async def main():
-    """ Starts the bot and handles automatic restarts if it crashes. """
-    while True:
-        try:
-            await bot.start()
-            logger.info("Bot started successfully!")
-            await idle()  # Keep bot running
-        except Exception as e:
-            logger.error(f"Bot crashed! Restarting in 5 seconds... Error: {e}")
-            await bot.stop()
-            await asyncio.sleep(5)  # Wait before restart
+    try:
+        # Sync system time to avoid msg_id error
+        now = datetime.datetime.now(datetime.UTC)
+        print(f"[INFO] System Time Synced: {now} UTC")
+
+        # Start the bot
+        async with bot:
+            logger.info("Bot is running...")
+            await idle()  # Keep the bot running
+    except Exception as e:
+        logger.error(f"Bot crashed! Restarting in 5 seconds... Error: {e}")
+        await asyncio.sleep(5)
+        await main()  # Restart bot
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\nBot stopped manually.")
