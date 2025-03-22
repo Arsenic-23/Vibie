@@ -1,7 +1,7 @@
 from pyrogram import Client, filters
 from config import is_admin
 
-def register_handlers(app: Client, call_py):
+def register_handlers(app: Client):
     @app.on_message(filters.command("mban") & filters.group)
     async def ban_command(client, message):
         if not is_admin(message):
@@ -26,3 +26,5 @@ def register_handlers(app: Client, call_py):
             await message.reply_text(f"✅ Unbanned {message.reply_to_message.from_user.mention}!")
         else:
             await message.reply_text("⚠️ User is not banned!")
+
+    # You can add more admin-related commands here (e.g., kick, warn, etc.)
