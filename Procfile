@@ -1,1 +1,1 @@
-web: python3 main.py
+web: ntpdate time.google.com && python3 main.py
