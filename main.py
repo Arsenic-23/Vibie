@@ -1,13 +1,13 @@
 import logging
 import asyncio
-from pyrogram import Client, filters
+from pyrogram import Client
 from config import API_ID, API_HASH, BOT_TOKEN
-from handlers.admin_handler import ban_user, unban_user, ban_all_users
-from handlers.music_handler import play_music, skip_song, show_queue, stop_music
-from handlers.ai_chat_handler import ai_chat  # Fixing the incorrect import
-from handlers.auth_handler import auth_check
-from handlers.effects_handler import add_effect
-from handlers.games_handler import start_game
+import handlers.admin_handler as admin_handler
+import handlers.ai_chat_handler as ai_chat_handler
+import handlers.auth_handler as auth_handler
+import handlers.effects_handler as effects_handler
+import handlers.games_handler as games_handler
+import handlers.music_handler as music_handler
 
 # Logging setup
 logging.basicConfig(level=logging.INFO)
@@ -22,17 +22,18 @@ bot = Client(
 )
 
 # Register handlers
-bot.add_handler(filters.command("mban")(ban_user))
-bot.add_handler(filters.command("unmban")(unban_user))
-bot.add_handler(filters.command("banallgc")(ban_all_users))
-bot.add_handler(filters.command("play")(play_music))
-bot.add_handler(filters.command("skip")(skip_song))
-bot.add_handler(filters.command("queue")(show_queue))
-bot.add_handler(filters.command("stop")(stop_music))
-bot.add_handler(filters.command("chat")(ai_chat))  # Fixed reference
-bot.add_handler(filters.command("auth")(auth_check))
-bot.add_handler(filters.command("effect")(add_effect))
-bot.add_handler(filters.command("game")(start_game))
+bot.add_handler(admin_handler.ban_user)
+bot.add_handler(admin_handler.unban_user)
+bot.add_handler(admin_handler.ban_all_users)
+
+bot.add_handler(ai_chat_handler.some_ai_handler)  # Replace with actual handler
+
+bot.add_handler(auth_handler.authorize_user)
+bot.add_handler(auth_handler.unauthorize_user)
+
+bot.add_handler(effects_handler.some_effect_handler)  # Replace with actual handler
+bot.add_handler(games_handler.some_game_handler)  # Replace with actual handler
+bot.add_handler(music_handler.some_music_handler)  # Replace with actual handler
 
 async def restart_bot():
     """ Restarts the bot automatically if it crashes. """
