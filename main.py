@@ -1,13 +1,13 @@
 import logging
 import asyncio
-from pyrogram import Client, filters
+from pyrogram import Client
 from config import API_ID, API_HASH, BOT_TOKEN
-from handlers.admin_handler import admin_handler
+from handlers.admin_handler import handlers as admin_handlers
 from handlers.auth_handler import authorize_user, unauthorize_user
-from handlers.effects_handler import effects_handler
-from handlers.games_handler import games_handler
-from handlers.music_handler import music_handler
-from handlers.ai_chat_handler import ai_chat  # Correctly importing ai_chat
+from handlers.effects_handler import handlers as effects_handlers
+from handlers.games_handler import handlers as games_handlers
+from handlers.music_handler import handlers as music_handlers
+from handlers.ai_chat_handler import ai_chat  # Correct import
 
 # Logging setup
 logging.basicConfig(level=logging.INFO)
@@ -22,13 +22,15 @@ bot = Client(
 )
 
 # Register handlers
-bot.add_handler(filters.command("auth")(authorize_user))
-bot.add_handler(filters.command("unauth")(unauthorize_user))
-bot.add_handler(filters.command("ask")(ai_chat))  # Correctly adding AI chat handler
-bot.add_handler(admin_handler)
-bot.add_handler(effects_handler)
-bot.add_handler(games_handler)
-bot.add_handler(music_handler)
+bot.add_handler(authorize_user)
+bot.add_handler(unauthorize_user)
+bot.add_handler(ai_chat)  # Correct AI chat handler
+
+# Register all grouped handlers
+for handler in (
+    admin_handlers + effects_handlers + games_handlers + music_handlers
+):
+    bot.add_handler(handler)
 
 async def restart_bot():
     """ Restarts the bot automatically if it crashes. """
