@@ -1,12 +1,18 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
+OWNER_ID = 7212032106 # Replace with your actual Telegram user ID
+
 # Dictionary to store banned users
 banned_users = {}
 
+async def get_admins(client, chat_id):
+    admins = await client.get_chat_members(chat_id, filter="administrators")
+    return [admin.user.id for admin in admins]
+
 @Client.on_message(filters.command("mban") & filters.group)
 async def ban_user(client, message: Message):
-    if not message.from_user or not message.from_user.id in await get_admins(client, message.chat.id):
+    if not message.from_user or message.from_user.id not in await get_admins(client, message.chat.id):
         return await message.reply_text("🚫 You need to be an admin to use this command.")
 
     if not message.reply_to_message:
@@ -23,7 +29,7 @@ async def ban_user(client, message: Message):
 
 @Client.on_message(filters.command("unmban") & filters.group)
 async def unban_user(client, message: Message):
-    if not message.from_user or not message.from_user.id in await get_admins(client, message.chat.id):
+    if not message.from_user or message.from_user.id not in await get_admins(client, message.chat.id):
         return await message.reply_text("🚫 You need to be an admin to use this command.")
 
     if not message.reply_to_message:
@@ -48,6 +54,5 @@ async def ban_all_users(client, message: Message):
     
     await message.reply_text("🚨 **All users have been banned** from using the bot in this group!")
 
-async def get_admins(client, chat_id):
-    admins = await client.get_chat_members(chat_id, filter="administrators")
-    return [admin.user.id for admin in admins]
+# Add a handler attribute for main.py
+handler = [ban_user, unban_user, ban_all_users]
