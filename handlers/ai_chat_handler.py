@@ -4,7 +4,6 @@ import openai
 
 openai.api_key = OPENAI_API_KEY
 
-@Client.on_message(filters.command("ask"))
 async def ai_chat(client, message):
     if len(message.command) < 2:
         return await message.reply_text("❓ Please ask a question. Example: `/ask What is AI?`")
