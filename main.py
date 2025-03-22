@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import datetime
-from pyrogram import Client
+from pyrogram import Client, idle
 import os
 
 # Enable logging
@@ -28,16 +28,27 @@ async def main():
         print(f"[INFO] System Time Synced: {now} UTC")
 
         # Start the bot
-        async with bot:
-            logger.info("Bot is running...")
-            await idle()  # Keep the bot running
+        await bot.start()
+        logger.info("Bot is running...")
+
+        await idle()  # Keep the bot running
+
     except Exception as e:
         logger.error(f"Bot crashed! Restarting in 5 seconds... Error: {e}")
         await asyncio.sleep(5)
         await main()  # Restart bot
 
+    finally:
+        await bot.stop()
+        logger.info("Bot stopped.")
+
 if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
     try:
-        asyncio.run(main())
+        loop.run_until_complete(main())
     except KeyboardInterrupt:
         print("\nBot stopped manually.")
+    except Exception as e:
+        logger.error(f"Unexpected Error: {e}")
+    finally:
+        loop.close()
