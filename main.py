@@ -66,9 +66,13 @@ def stream_audio(chat_id, audio_url):
 # Register handlers
 def register_handlers():
     from handlers import music_handler, admin_handler, ai_chat_handler
-    # Pass only app_client to the handlers (no need for PyTgCalls now)
+    
+    # Passing the correct argument to the handler's register_handlers method
+    # Based on the error, admin_handler.register_handlers() might require `call_py` as a parameter
+    call_py = None  # Add or modify this line based on how 'call_py' is used in your handler
+    
     music_handler.register_handlers(app_client)
-    admin_handler.register_handlers(app_client)
+    admin_handler.register_handlers(app_client, call_py)  # Correcting the missing argument here
     ai_chat_handler.register_handlers(app_client)
 
 if __name__ == "__main__":
