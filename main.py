@@ -2,8 +2,7 @@ import asyncio
 import logging
 import datetime
 import os
-import time
-import subprocess
+import ntplib  # Import ntplib for time sync
 from pyrogram import Client, idle
 
 # Enable logging
@@ -24,15 +23,17 @@ bot = Client(
 )
 
 async def sync_time():
-    """Sync system time to avoid msg_id errors."""
+    """Sync system time to avoid msg_id errors using ntplib."""
     try:
-        # Force time synchronization on Linux
-        subprocess.run(["ntpdate", "-u", "pool.ntp.org"], check=True)
+        # Use NTP to sync time
+        client = ntplib.NTPClient()
+        response = client.request('pool.ntp.org', version=3)
+        synced_time = datetime.datetime.utcfromtimestamp(response.tx_time)
+        print(f"[INFO] System Time Synced: {synced_time} UTC")
+        
     except Exception as e:
         logger.warning(f"Time sync failed: {e}")
-
-    now = datetime.datetime.now(datetime.UTC)
-    print(f"[INFO] System Time Synced: {now} UTC")
+    
     await asyncio.sleep(2)  # Wait for time sync to take effect
 
 async def main():
