@@ -33,7 +33,7 @@ async def sync_time():
     except Exception as e:
         logger.warning(f"Time sync failed: {e}")
 
-    await asyncio.sleep(3)  # Give it some time to sync before continuing
+    await asyncio.sleep(5)  # Added buffer time after sync before starting bot
 
 async def main():
     while True:
