@@ -58,11 +58,3 @@ async def stop_music(client, message: Message):
         await message.reply_text("⏹ Music stopped!")
     else:
         await message.reply_text("⚠ No music is playing!")
-
-@Client.on_voice_chat_started()
-async def voice_chat_started(client, chat: VoiceChatStarted):
-    await client.send_message(chat.chat.id, "🎤 Voice chat started! You can now play music.")
-
-@Client.on_voice_chat_ended()
-async def voice_chat_ended(client, chat: VoiceChatEnded):
-    await client.send_message(chat.chat.id, "📴 Voice chat ended! Music playback stopped.")
