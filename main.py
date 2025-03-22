@@ -1,6 +1,6 @@
 import logging
 import asyncio
-from pyrogram import Client
+from pyrogram import Client, idle
 from config import API_ID, API_HASH, BOT_TOKEN
 
 # Import handlers
@@ -21,7 +21,7 @@ bot = Client(
     bot_token=BOT_TOKEN
 )
 
-# Register handlers
+# Register handlers using the @bot.on_message() decorator if they are functions
 bot.add_handler(ban_user)
 bot.add_handler(unban_user)
 bot.add_handler(ban_all_users)
@@ -41,7 +41,7 @@ async def main():
         try:
             await bot.start()
             logger.info("Bot started successfully!")
-            await bot.run()  # Replaces idle()
+            await idle()  # Keep bot running
         except Exception as e:
             logger.error(f"Bot crashed! Restarting in 5 seconds... Error: {e}")
             await bot.stop()
