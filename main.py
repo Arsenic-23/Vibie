@@ -5,6 +5,7 @@ import threading
 import subprocess
 from flask import Flask
 from pyrogram import Client
+from pytgcalls import PyTgCalls
 from config import API_ID, API_HASH, BOT_TOKEN
 
 # Enable logging
@@ -42,6 +43,9 @@ except Exception as e:
     logger.error(f"❌ Failed to initialize bot: {e}")
     sys.exit(1)
 
+# Initialize PyTgCalls instance for streaming
+call_py = PyTgCalls(app_client)
+
 # Function to stream audio in voice chat using FFmpeg
 def stream_audio(chat_id, audio_url):
     logger.info(f"🎵 Streaming {audio_url} in chat {chat_id}")
@@ -66,9 +70,10 @@ def stream_audio(chat_id, audio_url):
 # Register handlers
 def register_handlers():
     from handlers import music_handler, admin_handler, ai_chat_handler
-    music_handler.register_handlers(app_client)
-    admin_handler.register_handlers(app_client)
-    ai_chat_handler.register_handlers(app_client)
+    # Pass both app_client and call_py to register_handlers
+    music_handler.register_handlers(app_client, call_py)
+    admin_handler.register_handlers(app_client, call_py)
+    ai_chat_handler.register_handlers(app_client, call_py)
 
 if __name__ == "__main__":
     logger.info("🚀 Starting the bot...")
