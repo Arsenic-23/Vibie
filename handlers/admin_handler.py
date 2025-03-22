@@ -1,14 +1,18 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
-OWNER_ID = 7212032106 # Replace with your actual Telegram user ID
+OWNER_ID = 7212032106  # Replace with your actual Telegram user ID
 
-# Dictionary to store banned users
+# Dictionary to store banned users (Temporary, resets on restart)
 banned_users = {}
 
 async def get_admins(client, chat_id):
-    admins = await client.get_chat_members(chat_id, filter="administrators")
-    return [admin.user.id for admin in admins]
+    try:
+        admins = await client.get_chat_administrators(chat_id)
+        return [admin.user.id for admin in admins]
+    except Exception as e:
+        print(f"Error fetching admins: {e}")
+        return []
 
 @Client.on_message(filters.command("mban") & filters.group)
 async def ban_user(client, message: Message):
@@ -54,5 +58,5 @@ async def ban_all_users(client, message: Message):
     
     await message.reply_text("🚨 **All users have been banned** from using the bot in this group!")
 
-# Add a handler attribute for main.py
-handler = [ban_user, unban_user, ban_all_users]
+# Export handlers for main.py
+handlers = [ban_user, unban_user, ban_all_users]
