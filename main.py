@@ -2,12 +2,12 @@ import logging
 import asyncio
 from pyrogram import Client
 from config import API_ID, API_HASH, BOT_TOKEN
-from handlers.admin_handler import handlers as admin_handlers
-from handlers.auth_handler import authorize_user, unauthorize_user
-from handlers.effects_handler import handlers as effects_handlers
-from handlers.games_handler import handlers as games_handlers
-from handlers.music_handler import handlers as music_handlers
-from handlers.ai_chat_handler import ai_chat  # Correct import
+
+# Import handlers (fixing incorrect imports)
+from handlers.admin_handler import ban_user, unban_user, ban_all_users
+from handlers.effects_handler import chipmunk_effect, deep_effect, echo_effect
+from handlers.games_handler import puzzle_game, check_puzzle_answer
+from handlers.music_handler import play_music, skip_song, show_queue, stop_music
 
 # Logging setup
 logging.basicConfig(level=logging.INFO)
@@ -21,26 +21,30 @@ bot = Client(
     bot_token=BOT_TOKEN
 )
 
-# Register handlers
-bot.add_handler(authorize_user)
-bot.add_handler(unauthorize_user)
-bot.add_handler(ai_chat)  # Correct AI chat handler
+# Register all handlers manually
+bot.add_handler(ban_user)
+bot.add_handler(unban_user)
+bot.add_handler(ban_all_users)
+bot.add_handler(chipmunk_effect)
+bot.add_handler(deep_effect)
+bot.add_handler(echo_effect)
+bot.add_handler(puzzle_game)
+bot.add_handler(check_puzzle_answer)
+bot.add_handler(play_music)
+bot.add_handler(skip_song)
+bot.add_handler(show_queue)
+bot.add_handler(stop_music)
 
-# Register all grouped handlers
-for handler in (
-    admin_handlers + effects_handlers + games_handlers + music_handlers
-):
-    bot.add_handler(handler)
-
-async def restart_bot():
-    """ Restarts the bot automatically if it crashes. """
-    while True:
-        try:
-            await bot.start()
-            await bot.idle()
-        except Exception as e:
-            logger.error(f"Bot crashed! Restarting... Error: {e}")
-            await asyncio.sleep(5)  # Wait before restart
+async def start_bot():
+    """ Starts the bot and keeps it running. """
+    try:
+        await bot.start()
+        logger.info("Bot started successfully!")
+        await bot.idle()
+    except Exception as e:
+        logger.error(f"Bot crashed! Restarting... Error: {e}")
+        await asyncio.sleep(5)  # Wait before restart
+        await start_bot()  # Restart bot
 
 if __name__ == "__main__":
-    asyncio.run(restart_bot())
+    asyncio.run(start_bot())
