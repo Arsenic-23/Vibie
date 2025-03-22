@@ -1,7 +1,13 @@
 import logging
 import asyncio
+import os
+import time
 from pyrogram import Client, idle
 from config import API_ID, API_HASH, BOT_TOKEN
+
+# Fix timezone issue on Koyeb
+os.environ["TZ"] = "UTC"
+time.tzset()
 
 # Import handlers
 from handlers.admin_handler import ban_user, unban_user, ban_all_users
