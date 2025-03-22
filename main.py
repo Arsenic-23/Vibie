@@ -2,12 +2,14 @@ import logging
 import asyncio
 import os
 import time
+import datetime
 from pyrogram import Client, idle
 from config import API_ID, API_HASH, BOT_TOKEN
 
-# Fix timezone issue on Koyeb
+# ✅ Force Time Synchronization (Fixes "msg_id is too low" error)
 os.environ["TZ"] = "UTC"
 time.tzset()
+print(f"[INFO] System Time Synced: {datetime.datetime.utcnow()} UTC")
 
 # Import handlers
 from handlers.admin_handler import ban_user, unban_user, ban_all_users
