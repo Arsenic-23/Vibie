@@ -2,7 +2,6 @@ import os
 import sys
 import logging
 import threading
-import subprocess
 from flask import Flask
 from pyrogram import Client
 from config import API_ID, API_HASH, BOT_TOKEN
@@ -42,37 +41,12 @@ except Exception as e:
     logger.error(f"❌ Failed to initialize bot: {e}")
     sys.exit(1)
 
-# Function to stream audio in voice chat using FFmpeg (without pytgcalls)
-def stream_audio(chat_id, audio_url):
-    logger.info(f"🎵 Streaming {audio_url} in chat {chat_id}")
-    
-    ffmpeg_command = [
-        "ffmpeg",
-        "-re",  # Read input in real-time
-        "-i", audio_url,  # Input URL
-        "-ac", "2",  # Set audio channels
-        "-f", "s16le",  # Output format
-        "-ar", "48000",  # Audio sampling rate
-        "-acodec", "pcm_s16le",  # Audio codec
-        "-"  # Output to stdout
-    ]
-    
-    try:
-        subprocess.Popen(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        logger.info("✅ Audio streaming started successfully!")
-    except Exception as e:
-        logger.error(f"❌ Failed to start streaming: {e}")
-
 # Register handlers
 def register_handlers():
     from handlers import music_handler, admin_handler, ai_chat_handler
-    
-    # Passing the correct argument to the handler's register_handlers method
-    # Based on the error, admin_handler.register_handlers() might require `call_py` as a parameter
-    call_py = None  # Add or modify this line based on how 'call_py' is used in your handler
-    
+    # Pass only app_client to the handlers (no need for PyTgCalls now)
     music_handler.register_handlers(app_client)
-    admin_handler.register_handlers(app_client, call_py)  # Correcting the missing argument here
+    admin_handler.register_handlers(app_client)
     ai_chat_handler.register_handlers(app_client)
 
 if __name__ == "__main__":
