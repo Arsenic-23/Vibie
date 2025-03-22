@@ -2,14 +2,12 @@ import logging
 import asyncio
 from pyrogram import Client, filters
 from config import API_ID, API_HASH, BOT_TOKEN
-from handlers import (
-    admin_handler,
-    ai_chat_handler,
-    auth_handler,
-    effects_handler,
-    games_handler,
-    music_handler
-)
+from handlers.admin_handler import ban_user, unban_user, ban_all_users
+from handlers.music_handler import play_music, skip_song, show_queue, stop_music
+from handlers.ai_chat_handler import ai_chat  # Fixing the incorrect import
+from handlers.auth_handler import auth_check
+from handlers.effects_handler import add_effect
+from handlers.games_handler import start_game
 
 # Logging setup
 logging.basicConfig(level=logging.INFO)
@@ -24,12 +22,17 @@ bot = Client(
 )
 
 # Register handlers
-bot.add_handler(admin_handler.handler)
-bot.add_handler(ai_chat_handler.handler)
-bot.add_handler(auth_handler.handler)
-bot.add_handler(effects_handler.handler)
-bot.add_handler(games_handler.handler)
-bot.add_handler(music_handler.handler)
+bot.add_handler(filters.command("mban")(ban_user))
+bot.add_handler(filters.command("unmban")(unban_user))
+bot.add_handler(filters.command("banallgc")(ban_all_users))
+bot.add_handler(filters.command("play")(play_music))
+bot.add_handler(filters.command("skip")(skip_song))
+bot.add_handler(filters.command("queue")(show_queue))
+bot.add_handler(filters.command("stop")(stop_music))
+bot.add_handler(filters.command("chat")(ai_chat))  # Fixed reference
+bot.add_handler(filters.command("auth")(auth_check))
+bot.add_handler(filters.command("effect")(add_effect))
+bot.add_handler(filters.command("game")(start_game))
 
 async def restart_bot():
     """ Restarts the bot automatically if it crashes. """
