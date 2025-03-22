@@ -1,2 +1,0 @@
-rm -rf relo_local
-git clone https://github.com/ldott/relo.git relo_local
