@@ -29,8 +29,10 @@ async def sync_time():
         response = c.request('pool.ntp.org')
         synced_time = datetime.datetime.fromtimestamp(response.tx_time, datetime.UTC)
         logger.info(f"[INFO] Time synced: {synced_time}")
+        return True
     except Exception as e:
         logger.warning(f"[WARNING] Time sync failed: {e}")
+        return False
 
 async def start_bot():
     """Start the bot and run continuously."""
@@ -45,8 +47,12 @@ async def start_bot():
 
 async def main():
     """Run the sync_time function before the bot starts."""
-    await sync_time()  # Sync time first
-    await start_bot()  # Then start the bot
+    sync_successful = await sync_time()
+    if sync_successful:
+        await asyncio.sleep(1)  # Wait for time to settle before starting bot
+        await start_bot()  # Then start the bot
+    else:
+        logger.error("Time synchronization failed. Bot will not start.")
 
 if __name__ == "__main__":
     try:
