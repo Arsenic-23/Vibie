@@ -32,9 +32,9 @@ def home():
     return "Bot is running!"
 
 def run_web_server():
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=8080, debug=False)
 
-Thread(target=run_web_server).start()
+Thread(target=run_web_server, daemon=True).start()
 
 async def start_bot_with_retries():
     """Start the bot with retry mechanism."""
@@ -43,9 +43,7 @@ async def start_bot_with_retries():
         try:
             await bot.start()
             logger.info("Bot is running...")
-
-            # Start idle task separately
-            await idle()
+            await idle()  # Keep the bot running
             return
         except FloodWait as e:
             logger.warning(f"FloodWait: Sleeping for {e.x} seconds...")
@@ -68,7 +66,7 @@ async def main():
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())  # Best way to run async functions
+        asyncio.run(main())  
     except KeyboardInterrupt:
         logger.info("Bot stopped manually.")
     except Exception as e:
