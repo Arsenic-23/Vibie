@@ -28,12 +28,12 @@ async def sync_time():
         # Use ntplib to get time from NTP server
         c = ntplib.NTPClient()
         response = c.request('pool.ntp.org')
-        synced_time = datetime.datetime.fromtimestamp(response.tx_time, datetime.timezone.utc)
+        synced_time = datetime.datetime.fromtimestamp(response.tx_time, datetime.UTC)
         logger.info(f"[INFO] Time synced: {synced_time}")
     except Exception as e:
         logger.warning(f"Time sync failed: {e}")
 
-    await asyncio.sleep(10)  # Increased buffer time after sync before starting bot
+    await asyncio.sleep(30)  # Increased buffer time after sync before starting bot
 
 async def main():
     while True:
