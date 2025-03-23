@@ -7,4 +7,3 @@ openai
 python-dotenv
 ntplib
 pytz
-requests
