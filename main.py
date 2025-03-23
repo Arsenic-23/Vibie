@@ -24,16 +24,13 @@ bot = Client(
 
 async def sync_time():
     """Synchronize system time using NTP servers and log sync events."""
-    while True:
-        try:
-            c = ntplib.NTPClient()
-            response = c.request('pool.ntp.org')
-            synced_time = datetime.datetime.fromtimestamp(response.tx_time, datetime.UTC)
-            logger.info(f"[INFO] Time synced: {synced_time}")
-        except Exception as e:
-            logger.warning(f"[WARNING] Time sync failed: {e}")
-        
-        await asyncio.sleep(60 * 5)  # Sync every 5 minutes
+    try:
+        c = ntplib.NTPClient()
+        response = c.request('pool.ntp.org')
+        synced_time = datetime.datetime.fromtimestamp(response.tx_time, datetime.UTC)
+        logger.info(f"[INFO] Time synced: {synced_time}")
+    except Exception as e:
+        logger.warning(f"[WARNING] Time sync failed: {e}")
 
 async def start_bot():
     """Start the bot and run continuously."""
@@ -47,8 +44,9 @@ async def start_bot():
         await asyncio.sleep(5)  # Wait before restart
 
 async def main():
-    """Run the sync_time function alongside the bot."""
-    await asyncio.gather(sync_time(), start_bot())  # Start the bot with time sync
+    """Run the sync_time function before the bot starts."""
+    await sync_time()  # Sync time first
+    await start_bot()  # Then start the bot
 
 if __name__ == "__main__":
     try:
