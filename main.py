@@ -23,41 +23,36 @@ bot = Client(
 )
 
 async def sync_time():
-    """Sync system time to avoid msg_id errors."""
-    try:
-        # Use ntplib to get time from NTP server
-        c = ntplib.NTPClient()
-        response = c.request('pool.ntp.org')
-        synced_time = datetime.datetime.fromtimestamp(response.tx_time, datetime.UTC)
-        logger.info(f"[INFO] Time synced: {synced_time}")
-    except Exception as e:
-        logger.warning(f"Time sync failed: {e}")
-
-    await asyncio.sleep(30)  # Increased buffer time after sync before starting bot
-
-async def main():
+    """Synchronize system time using NTP servers and log sync events."""
     while True:
         try:
-            await sync_time()  # Sync time before starting
-            
-            await bot.start()
-            logger.info("Bot is running...")
-            
-            await idle()  # Keep bot running
-            
+            c = ntplib.NTPClient()
+            response = c.request('pool.ntp.org')
+            synced_time = datetime.datetime.fromtimestamp(response.tx_time, datetime.UTC)
+            logger.info(f"[INFO] Time synced: {synced_time}")
         except Exception as e:
-            logger.error(f"Bot crashed! Restarting in 5 seconds... Error: {e}")
-            
-            await bot.stop()  # Ensure bot is stopped before restarting
-            await asyncio.sleep(5)  # Wait before restart
-            
-        finally:
-            await bot.stop()
-            logger.info("Bot stopped.")
+            logger.warning(f"[WARNING] Time sync failed: {e}")
+        
+        await asyncio.sleep(60 * 5)  # Sync every 5 minutes
+
+async def start_bot():
+    """Start the bot and run continuously."""
+    try:
+        await bot.start()
+        logger.info("Bot is running...")
+        await idle()  # Keep bot running
+    except Exception as e:
+        logger.error(f"Bot crashed! Restarting in 5 seconds... Error: {e}")
+        await bot.stop()  # Ensure bot is stopped before restarting
+        await asyncio.sleep(5)  # Wait before restart
+
+async def main():
+    """Run the sync_time function alongside the bot."""
+    await asyncio.gather(sync_time(), start_bot())  # Start the bot with time sync
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
+        asyncio.run(main())  # Run the main function
     except KeyboardInterrupt:
         logger.info("Bot stopped manually.")
     except Exception as e:
