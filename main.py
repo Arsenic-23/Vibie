@@ -3,8 +3,10 @@ import logging
 import datetime
 import os
 import time
+import sys
 import ntplib
 from pyrogram import Client, idle
+from pyrogram.errors import FloodWait  # Import error handling
 
 # Enable logging
 logging.basicConfig(level=logging.INFO)
@@ -28,7 +30,7 @@ async def sync_time():
     try:
         c = ntplib.NTPClient()
         response = c.request('pool.ntp.org')
-        synced_time = datetime.datetime.fromtimestamp(response.tx_time, datetime.timezone.utc)  # Corrected here
+        synced_time = datetime.datetime.fromtimestamp(response.tx_time, datetime.timezone.utc)
         logger.info(f"[INFO] Time synced: {synced_time}")
         return True
     except Exception as e:
@@ -41,28 +43,28 @@ async def start_bot_with_retries():
     while retries > 0:
         try:
             # Start the bot
-            await bot.start()  # This will keep the bot running
+            await bot.start()
             logger.info("Bot is running...")
             await idle()  # Keep the bot running
             break
-        except pyrogram.errors.FloodWait as e:
+        except FloodWait as e:
             logger.warning(f"FloodWait: Sleeping for {e.x} seconds...")
-            time.sleep(e.x)  # Sleep if flood wait occurs
+            await asyncio.sleep(e.x)  # Async sleep instead of time.sleep
         except Exception as e:
             logger.error(f"Error: {e}")
             retries -= 1
             if retries == 0:
                 logger.error("Max retries reached. Exiting.")
-                exit(1)  # Exit if retries are exhausted
+                sys.exit(1)  # Proper exit for async functions
             logger.info("Retrying in 5 seconds...")
-            time.sleep(5)  # Wait 5 seconds before retrying
+            await asyncio.sleep(5)  # Async sleep instead of time.sleep
 
 async def main():
     """Run the sync_time function before the bot starts."""
     sync_successful = await sync_time()
     if sync_successful:
         await asyncio.sleep(1)  # Wait for time to settle before starting bot
-        await start_bot_with_retries()  # Call the retry mechanism for starting the bot
+        await start_bot_with_retries()
     else:
         logger.error("Time synchronization failed. Bot will not start.")
 
