@@ -2,11 +2,11 @@ import asyncio
 import logging
 import datetime
 import os
-import time
 import sys
 import ntplib
+from aiohttp import web  # Required for health check on Koyeb
 from pyrogram import Client, idle
-from pyrogram.errors import FloodWait  # Import error handling
+from pyrogram.errors import FloodWait, RPCError
 
 # Enable logging
 logging.basicConfig(level=logging.INFO)
@@ -37,34 +37,52 @@ async def sync_time():
         logger.warning(f"[WARNING] Time sync failed: {e}")
         return False
 
+async def health_check(request):
+    """Basic health check endpoint for Koyeb."""
+    return web.Response(text="Bot is running!", status=200)
+
+async def start_web_server():
+    """Start a simple web server for health checks on port 8000."""
+    app = web.Application()
+    app.router.add_get("/", health_check)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, "0.0.0.0", 8000)
+    await site.start()
+
 async def start_bot_with_retries():
     """Start the bot with retry mechanism."""
     retries = 5
     while retries > 0:
         try:
-            # Start the bot
             await bot.start()
             logger.info("Bot is running...")
             await idle()  # Keep the bot running
             break
         except FloodWait as e:
             logger.warning(f"FloodWait: Sleeping for {e.x} seconds...")
-            await asyncio.sleep(e.x)  # Async sleep instead of time.sleep
-        except Exception as e:
-            logger.error(f"Error: {e}")
+            await asyncio.sleep(e.x)  # Async sleep
+        except RPCError as e:
+            logger.error(f"RPCError: {e}")
             retries -= 1
             if retries == 0:
                 logger.error("Max retries reached. Exiting.")
-                sys.exit(1)  # Proper exit for async functions
+                sys.exit(1)
             logger.info("Retrying in 5 seconds...")
-            await asyncio.sleep(5)  # Async sleep instead of time.sleep
+            await asyncio.sleep(5)
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}")
+            sys.exit(1)
 
 async def main():
-    """Run the sync_time function before the bot starts."""
+    """Run the bot and health check server together."""
     sync_successful = await sync_time()
     if sync_successful:
-        await asyncio.sleep(1)  # Wait for time to settle before starting bot
-        await start_bot_with_retries()
+        await asyncio.sleep(1)
+        await asyncio.gather(
+            start_bot_with_retries(),
+            start_web_server()
+        )
     else:
         logger.error("Time synchronization failed. Bot will not start.")
 
