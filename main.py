@@ -1,10 +1,9 @@
 import asyncio
 import logging
-import datetime
 import os
 import sys
-import ntplib
-from aiohttp import web  # Required for health check on Koyeb
+from flask import Flask
+from threading import Thread
 from pyrogram import Client, idle
 from pyrogram.errors import FloodWait, RPCError
 
@@ -25,34 +24,17 @@ bot = Client(
     bot_token=BOT_TOKEN
 )
 
-async def sync_time():
-    """Synchronize system time using NTP servers and log sync events."""
-    try:
-        c = ntplib.NTPClient()
-        response = c.request('pool.ntp.org')
-        synced_time = datetime.datetime.fromtimestamp(response.tx_time, datetime.timezone.utc)
-        logger.info(f"[INFO] Time synced: {synced_time}")
-        
-        # Small delay to ensure stability
-        await asyncio.sleep(3)  
-        return True
-    except Exception as e:
-        logger.warning(f"[WARNING] Time sync failed: {e}")
-        return False
+# Flask Web Server (for UptimeRobot)
+app = Flask(__name__)
 
-async def health_check(request):
-    """Basic health check endpoint for Koyeb."""
-    return web.Response(text="Bot is running!", status=200)
+@app.route('/')
+def home():
+    return "Bot is running!"
 
-async def start_web_server():
-    """Start a simple web server for health checks on port 8000."""
-    app = web.Application()
-    app.router.add_get("/", health_check)
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", 8000)
-    await site.start()
-    logger.info("Health check server running on port 8000.")
+def run_web_server():
+    app.run(host="0.0.0.0", port=8080)
+
+Thread(target=run_web_server).start()
 
 async def start_bot_with_retries():
     """Start the bot with retry mechanism."""
@@ -62,9 +44,9 @@ async def start_bot_with_retries():
             await bot.start()
             logger.info("Bot is running...")
 
-            # Start idle task separately to allow web server to run
-            asyncio.create_task(idle())
-            return  # Exit function after successful start
+            # Start idle task separately
+            await idle()
+            return
         except FloodWait as e:
             logger.warning(f"FloodWait: Sleeping for {e.x} seconds...")
             await asyncio.sleep(e.x)
@@ -81,21 +63,12 @@ async def start_bot_with_retries():
             sys.exit(1)
 
 async def main():
-    """Run the bot and health check server together."""
-    sync_successful = await sync_time()
-    if sync_successful:
-        await asyncio.sleep(1)
-        await asyncio.gather(
-            start_bot_with_retries(),
-            start_web_server()
-        )
-    else:
-        logger.error("Time synchronization failed. Bot will not start.")
+    """Run the bot"""
+    await start_bot_with_retries()
 
 if __name__ == "__main__":
     try:
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(main())  # Replaces asyncio.run()
+        asyncio.run(main())  # Best way to run async functions
     except KeyboardInterrupt:
         logger.info("Bot stopped manually.")
     except Exception as e:
