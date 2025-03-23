@@ -28,7 +28,7 @@ async def sync_time():
         # Use ntplib to get time from NTP server
         c = ntplib.NTPClient()
         response = c.request('pool.ntp.org')
-        synced_time = datetime.datetime.fromtimestamp(response.tx_time, datetime.UTC)
+        synced_time = datetime.datetime.fromtimestamp(response.tx_time, datetime.timezone.utc)
         logger.info(f"[INFO] Time synced: {synced_time}")
     except Exception as e:
         logger.warning(f"Time sync failed: {e}")
