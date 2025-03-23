@@ -32,6 +32,9 @@ async def sync_time():
         response = c.request('pool.ntp.org')
         synced_time = datetime.datetime.fromtimestamp(response.tx_time, datetime.timezone.utc)
         logger.info(f"[INFO] Time synced: {synced_time}")
+        
+        # Small delay to ensure stability
+        await asyncio.sleep(3)  
         return True
     except Exception as e:
         logger.warning(f"[WARNING] Time sync failed: {e}")
@@ -49,6 +52,7 @@ async def start_web_server():
     await runner.setup()
     site = web.TCPSite(runner, "0.0.0.0", 8000)
     await site.start()
+    logger.info("Health check server running on port 8000.")
 
 async def start_bot_with_retries():
     """Start the bot with retry mechanism."""
@@ -57,11 +61,13 @@ async def start_bot_with_retries():
         try:
             await bot.start()
             logger.info("Bot is running...")
-            await idle()  # Keep the bot running
-            break
+
+            # Start idle task separately to allow web server to run
+            asyncio.create_task(idle())
+            return  # Exit function after successful start
         except FloodWait as e:
             logger.warning(f"FloodWait: Sleeping for {e.x} seconds...")
-            await asyncio.sleep(e.x)  # Async sleep
+            await asyncio.sleep(e.x)
         except RPCError as e:
             logger.error(f"RPCError: {e}")
             retries -= 1
@@ -88,7 +94,8 @@ async def main():
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())  # Run the main function
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(main())  # Replaces asyncio.run()
     except KeyboardInterrupt:
         logger.info("Bot stopped manually.")
     except Exception as e:
