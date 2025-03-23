@@ -6,15 +6,11 @@ from flask import Flask
 from threading import Thread
 from pyrogram import Client, idle
 from pyrogram.errors import FloodWait, RPCError
+from config import API_ID, API_HASH, BOT_TOKEN  # Import config values
 
 # Enable logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Load environment variables
-API_ID = int(os.getenv("API_ID", "0"))
-API_HASH = os.getenv("API_HASH", "")
-BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 
 # Initialize Pyrogram Bot
 bot = Client(
@@ -32,12 +28,13 @@ def home():
     return "Bot is running!"
 
 def run_web_server():
-    app.run(host="0.0.0.0", port=8080, debug=False)
+    """Start a web server to keep the bot alive (for UptimeRobot)"""
+    app.run(host="0.0.0.0", port=8080)
 
-Thread(target=run_web_server, daemon=True).start()
+Thread(target=run_web_server).start()  # Start Flask server in a separate thread
 
 async def start_bot_with_retries():
-    """Start the bot with retry mechanism."""
+    """Start the bot with a retry mechanism to handle failures."""
     retries = 5
     while retries > 0:
         try:
@@ -61,12 +58,12 @@ async def start_bot_with_retries():
             sys.exit(1)
 
 async def main():
-    """Run the bot"""
+    """Run the bot."""
     await start_bot_with_retries()
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())  
+        asyncio.run(main())  # Run the bot asynchronously
     except KeyboardInterrupt:
         logger.info("Bot stopped manually.")
     except Exception as e:
