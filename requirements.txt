@@ -1,10 +1,4 @@
-pyrogram==2.0.30
+pyrogram
 tgcrypto
-motor
-pydub
-ffmpeg
-openai
 python-dotenv
-ntplib
-pytz
-aiohttp
+openai
