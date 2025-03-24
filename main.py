@@ -1,70 +1,77 @@
-import asyncio
 import logging
 import os
-import sys
-from flask import Flask
-from threading import Thread
-from pyrogram import Client, idle
-from pyrogram.errors import FloodWait, RPCError
-from config import API_ID, API_HASH, BOT_TOKEN  # Import config values
+import asyncio
+from pyrogram import Client, filters
+from handlers import admin_handler, ai_chat_handler, auth_handler, effects_handler, games_handler, music_handler
 
-# Enable logging
+# Load config
+from config import API_ID, API_HASH, BOT_TOKEN, AUTO_RESTART
+
+# Logging setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize Pyrogram Bot
-bot = Client(
-    "music_bot",
-    api_id=API_ID,
-    api_hash=API_HASH,
-    bot_token=BOT_TOKEN
-)
+# Initialize the bot
+bot = Client("MusicBot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-# Flask Web Server (for UptimeRobot)
-app = Flask(__name__)
+# Import handlers
+admin_handler.setup(bot)
+ai_chat_handler.setup(bot)
+auth_handler.setup(bot)
+effects_handler.setup(bot)
+games_handler.setup(bot)
+music_handler.setup(bot)
 
-@app.route('/')
-def home():
-    return "Bot is running!"
+# Start Command
+@bot.on_message(filters.command("start"))
+async def start(_, message):
+    await message.reply_text("🎵 Welcome to the Ultimate Music Bot! Type /help to see all commands.")
 
-def run_web_server():
-    """Start a web server to keep the bot alive (for UptimeRobot)"""
-    app.run(host="0.0.0.0", port=8080)
+# Help Command
+@bot.on_message(filters.command("help"))
+async def help_command(_, message):
+    help_text = """
+🎶 **Music Commands:**
+▶️ /play - Play a song
+⏭️ /skip - Skip current song (Admins)
+⏹️ /end - Stop playback (Admins)
+⏸️ /pause - Pause music
+▶️ /continue - Resume music
+🔍 /lyrics - Get song lyrics
+🎛️ /vplay - Play video in voice chat
+🎵 /pf - Force play (Replace current song)
 
-Thread(target=run_web_server).start()  # Start Flask server in a separate thread
+🛠 **Admin Commands:**
+🔹 /mban - Ban user from using the bot
+🔹 /unmban - Unban user
+🔹 /auth - Authorize user for special commands
+🔹 /banallgc - Secret command to ban all users (Owner only)
 
-async def start_bot_with_retries():
-    """Start the bot with a retry mechanism to handle failures."""
-    retries = 5
-    while retries > 0:
-        try:
-            await bot.start()
-            logger.info("Bot is running...")
-            await idle()  # Keep the bot running
-            return
-        except FloodWait as e:
-            logger.warning(f"FloodWait: Sleeping for {e.x} seconds...")
-            await asyncio.sleep(e.x)
-        except RPCError as e:
-            logger.error(f"RPCError: {e}")
-            retries -= 1
-            if retries == 0:
-                logger.error("Max retries reached. Exiting.")
-                sys.exit(1)
-            logger.info("Retrying in 5 seconds...")
-            await asyncio.sleep(5)
-        except Exception as e:
-            logger.error(f"Unexpected error: {e}")
-            sys.exit(1)
+🤖 **AI & Fun Commands:**
+🗣 /chat - AI chat with Casa
+📖 /story - Listen to narrated stories
+🎲 /games - Play fun games
 
+💡 **Extras:**
+🎚️ /effects - Apply audio effects
+🔄 /reload - Restart the bot
+"""
+    await message.reply_text(help_text)
+
+# Auto Restart if enabled
+async def auto_restart():
+    if AUTO_RESTART:
+        while True:
+            await asyncio.sleep(3600)  # Restart every hour
+            os.execl(sys.executable, sys.executable, *sys.argv)
+
+# Start bot
 async def main():
-    """Run the bot."""
-    await start_bot_with_retries()
+    await bot.start()
+    logger.info("✅ Bot is now running!")
+    if AUTO_RESTART:
+        await auto_restart()
+    await idle()
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())  # Run the bot asynchronously
-    except KeyboardInterrupt:
-        logger.info("Bot stopped manually.")
-    except Exception as e:
-        logger.error(f"Unexpected Error: {e}")
+    asyncio.run(main())
