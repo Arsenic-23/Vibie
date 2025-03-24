@@ -1,83 +1,73 @@
 from pyrogram import Client, filters
-from pyrogram.types import Message
-import asyncio
-import logging
+from pytube import YouTube
+import os
 
-# Enable logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Dictionary to store the queue for each chat
-music_queues = {}
-currently_playing = {}  # Tracks active playback per chat
+# Dictionary to store the music queue
+MUSIC_QUEUE = {}
 
 @Client.on_message(filters.command("play"))
-async def play_music(client, message: Message):
-    """Handles the /play command to add songs to the queue and start playback."""
+async def play_music(client, message):
     if len(message.command) < 2:
-        return await message.reply_text("🎵 Please provide a song name or reply to an audio file to play.")
+        return await message.reply_text("Usage: `/play <song name or YouTube link>`")
 
     chat_id = message.chat.id
-    song_name = " ".join(message.command[1:])
+    query = " ".join(message.command[1:])
 
-    # Add to queue
-    if chat_id not in music_queues:
-        music_queues[chat_id] = []
-    music_queues[chat_id].append(song_name)
+    # Download audio from YouTube
+    try:
+        yt = YouTube(query) if "youtube.com" in query or "youtu.be" in query else YouTube(f"https://www.youtube.com/results?search_query={query}")
+        audio_stream = yt.streams.filter(only_audio=True).first()
+        file_path = audio_stream.download(filename="music.mp3")
 
-    await message.reply_text(f"✅ Added **{song_name}** to queue!")
+        # Add to queue
+        if chat_id not in MUSIC_QUEUE:
+            MUSIC_QUEUE[chat_id] = []
+        MUSIC_QUEUE[chat_id].append(file_path)
 
-    # If nothing is currently playing, start playback
-    if chat_id not in currently_playing:
-        await play_next_song(client, chat_id)
+        await message.reply_text(f"🎶 Added **{yt.title}** to the queue!")
 
-async def play_next_song(client, chat_id):
-    """Plays the next song in the queue."""
-    if chat_id in music_queues and music_queues[chat_id]:
-        currently_playing[chat_id] = True  # Mark as playing
-        current_song = music_queues[chat_id].pop(0)
+        # If nothing is playing, start playing
+        if len(MUSIC_QUEUE[chat_id]) == 1:
+            await start_playback(client, message, chat_id)
 
-        logger.info(f"Playing song: {current_song} in chat {chat_id}")
+    except Exception as e:
+        await message.reply_text(f"❌ Error: {e}")
 
-        await client.send_message(chat_id, f"🎶 Now Playing: **{current_song}**")
+async def start_playback(client, message, chat_id):
+    if MUSIC_QUEUE.get(chat_id):
+        file_path = MUSIC_QUEUE[chat_id][0]
 
-        # Simulate song playing (replace with actual audio playback logic)
-        await asyncio.sleep(5)  # Simulate song playing for 5 seconds
-        
-        currently_playing.pop(chat_id, None)  # Mark as not playing
-        await play_next_song(client, chat_id)  # Play the next song
+        # Play the music (pseudo-code, needs actual playback handling)
+        await message.reply_voice(file_path, caption="🎵 Now Playing!")
 
-    else:
-        currently_playing.pop(chat_id, None)  # No more songs left, reset playing state
+        # Remove from queue after playing
+        MUSIC_QUEUE[chat_id].pop(0)
+
+        # If more songs in queue, play next
+        if MUSIC_QUEUE[chat_id]:
+            await start_playback(client, message, chat_id)
 
 @Client.on_message(filters.command("skip"))
-async def skip_song(client, message: Message):
-    """Skips the currently playing song and moves to the next in queue."""
+async def skip_music(client, message):
     chat_id = message.chat.id
-    if chat_id in music_queues and music_queues[chat_id]:
-        await message.reply_text("⏭ Skipping song...")
-        currently_playing.pop(chat_id, None)  # Allow next song to start
-        await play_next_song(client, chat_id)
+    if chat_id in MUSIC_QUEUE and MUSIC_QUEUE[chat_id]:
+        MUSIC_QUEUE[chat_id].pop(0)  # Remove current song
+        await message.reply_text("⏭ Skipping to the next song...")
+        await start_playback(client, message, chat_id)
     else:
-        await message.reply_text("⚠ No songs in queue!")
+        await message.reply_text("❌ No songs in the queue.")
 
 @Client.on_message(filters.command("queue"))
-async def show_queue(client, message: Message):
-    """Displays the current music queue."""
+async def show_queue(client, message):
     chat_id = message.chat.id
-    if chat_id in music_queues and music_queues[chat_id]:
-        queue_text = "\n".join(f"🎵 {idx+1}. {song}" for idx, song in enumerate(music_queues[chat_id]))
-        await message.reply_text(f"📜 **Current Queue:**\n{queue_text}")
+    if chat_id in MUSIC_QUEUE and MUSIC_QUEUE[chat_id]:
+        queue_text = "\n".join([f"{idx+1}. {os.path.basename(song)}" for idx, song in enumerate(MUSIC_QUEUE[chat_id])])
+        await message.reply_text(f"🎵 **Current Queue:**\n{queue_text}")
     else:
-        await message.reply_text("🚫 No songs in queue!")
+        await message.reply_text("🎶 The queue is empty!")
 
-@Client.on_message(filters.command("stop"))
-async def stop_music(client, message: Message):
-    """Stops all music and clears the queue."""
+@Client.on_message(filters.command("end"))
+async def stop_music(client, message):
     chat_id = message.chat.id
-    if chat_id in music_queues:
-        music_queues[chat_id] = []  # Clear the queue
-        currently_playing.pop(chat_id, None)  # Stop playing
-        await message.reply_text("⏹ Music stopped!")
-    else:
-        await message.reply_text("⚠ No music is playing!")
+    MUSIC_QUEUE[chat_id] = []
+    await message.reply_text("🛑 Music playback stopped.")
