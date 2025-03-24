@@ -1,51 +1,36 @@
-import os
-import subprocess
 from pyrogram import Client, filters
+import os
 
-@Client.on_message(filters.command("chipmunk"))
-async def chipmunk_effect(client, message):
-    if not message.reply_to_message or not message.reply_to_message.audio:
-        return await message.reply_text("🎵 Reply to an audio file with `/chipmunk` to apply the effect.")
+# Dictionary mapping effect names to FFmpeg filters
+AUDIO_EFFECTS = {
+    "chipmunk": "asetrate=44100*1.5,atempo=0.8",
+    "deep": "asetrate=44100*0.8,atempo=1.25",
+    "echo": "aecho=0.8:0.88:6:0.4",
+    "robot": "afftfilt='real='if(gt(fmod(N,16),8),-1,1)':imag=0'",
+}
 
-    file_path = await client.download_media(message.reply_to_message)
-    base_name, ext = os.path.splitext(file_path)
-    output_path = f"{base_name}_chipmunk{ext}"
+@Client.on_message(filters.command(["effect"]) & filters.reply)
+async def apply_effect(client, message):
+    if len(message.command) < 2:
+        return await message.reply_text("Usage: `/effect <chipmunk/deep/echo/robot>` (reply to an audio file)")
 
-    subprocess.run(["ffmpeg", "-i", file_path, "-af", "asetrate=44100*1.5,atempo=0.8", output_path])
+    effect = message.command[1].lower()
+    if effect not in AUDIO_EFFECTS:
+        return await message.reply_text("Invalid effect. Choose from: chipmunk, deep, echo, robot.")
 
-    await message.reply_audio(audio=output_path, caption="🐿️ Chipmunk Effect Applied!")
-    os.remove(file_path)
-    os.remove(output_path)
+    replied = message.reply_to_message
+    if not replied.audio and not replied.voice:
+        return await message.reply_text("Please reply to an audio file or voice note.")
 
-@Client.on_message(filters.command("deep"))
-async def deep_effect(client, message):
-    if not message.reply_to_message or not message.reply_to_message.audio:
-        return await message.reply_text("🎵 Reply to an audio file with `/deep` to apply the effect.")
+    audio_file = await replied.download()
+    output_file = f"processed_{effect}.ogg"
 
-    file_path = await client.download_media(message.reply_to_message)
-    base_name, ext = os.path.splitext(file_path)
-    output_path = f"{base_name}_deep{ext}"
+    # Apply effect using FFmpeg
+    os.system(f"ffmpeg -i {audio_file} -af \"{AUDIO_EFFECTS[effect]}\" {output_file}")
 
-    subprocess.run(["ffmpeg", "-i", file_path, "-af", "asetrate=44100*0.8,atempo=1.25", output_path])
+    # Send the processed audio
+    await message.reply_audio(output_file, caption=f"Here is your `{effect}` effect! 🎵")
 
-    await message.reply_audio(audio=output_path, caption="🎶 Deep Voice Effect Applied!")
-    os.remove(file_path)
-    os.remove(output_path)
-
-@Client.on_message(filters.command("echo"))
-async def echo_effect(client, message):
-    if not message.reply_to_message or not message.reply_to_message.audio:
-        return await message.reply_text("🎵 Reply to an audio file with `/echo` to apply the effect.")
-
-    file_path = await client.download_media(message.reply_to_message)
-    base_name, ext = os.path.splitext(file_path)
-    output_path = f"{base_name}_echo{ext}"
-
-    subprocess.run(["ffmpeg", "-i", file_path, "-af", "aecho=0.8:0.88:60:0.4", output_path])
-
-    await message.reply_audio(audio=output_path, caption="🔊 Echo Effect Applied!")
-    os.remove(file_path)
-    os.remove(output_path)
-
-# Export handlers for main.py
-handlers = [chipmunk_effect, deep_effect, echo_effect]
+    # Clean up files
+    os.remove(audio_file)
+    os.remove(output_file)
