@@ -1,45 +1,44 @@
 from pyrogram import Client, filters
 import random
 
-puzzle_questions = [
-    {"question": "🔢 What comes next in the sequence? 2, 4, 8, 16, ?", "answer": "32"},
-    {"question": "🧩 I have keys but open no locks. What am I?", "answer": "Keyboard"},
-    {"question": "🎭 The more you take, the more you leave behind. What am I?", "answer": "Footsteps"},
-    {"question": "📅 I occur once in a minute, twice in a moment, but never in a thousand years. What am I?", "answer": "The letter M"},
+# Puzzle questions and answers
+PUZZLES = [
+    {"question": "I speak without a mouth and hear without ears. What am I?", "answer": "echo"},
+    {"question": "The more you take, the more you leave behind. What am I?", "answer": "footsteps"},
+    {"question": "What has to be broken before you can use it?", "answer": "egg"},
 ]
 
-# Initialize puzzle_answers as an attribute of the bot
-def ensure_puzzle_storage(client):
-    if not hasattr(client, "puzzle_answers"):
-        setattr(client, "puzzle_answers", {})
+# Music challenge (guess the song)
+SONG_QUIZ = {
+    "Despacito": "🎵 Guess this song: 'Des... pa... ???' 🎶",
+    "Shape of You": "🎵 Guess this song: 'I'm in love with the ?? of you' 🎶",
+    "Believer": "🎵 Guess this song: 'First things first, I'ma say all the ?? inside my head' 🎶",
+}
 
 @Client.on_message(filters.command("puzzle"))
-async def puzzle_game(client, message):
-    """Sends a random puzzle to the group."""
-    ensure_puzzle_storage(client)
-    
-    question = random.choice(puzzle_questions)
-    await message.reply_text(f"🧠 Puzzle Challenge!\n\n{question['question']}\n\nReply with your answer!")
-
-    # Store the correct answer
-    client.puzzle_answers[message.chat.id] = question["answer"].lower()
+async def send_puzzle(client, message):
+    puzzle = random.choice(PUZZLES)
+    await message.reply_text(f"🧩 Puzzle: {puzzle['question']}\n\nReply with your answer!")
 
 @Client.on_message(filters.text & filters.reply)
 async def check_puzzle_answer(client, message):
-    """Checks if the user's reply is the correct answer to the puzzle."""
-    ensure_puzzle_storage(client)
+    replied = message.reply_to_message.text
+    for puzzle in PUZZLES:
+        if puzzle["question"] in replied and message.text.lower() == puzzle["answer"]:
+            return await message.reply_text("✅ Correct answer! 🎉")
+    
+    await message.reply_text("❌ Incorrect! Try again.")
 
-    if message.from_user.is_bot:  # Ignore bot messages
-        return
+@Client.on_message(filters.command("songquiz"))
+async def send_song_quiz(client, message):
+    song, hint = random.choice(list(SONG_QUIZ.items()))
+    await message.reply_text(f"{hint}\n\nReply with the song name!")
 
-    if message.chat.id in client.puzzle_answers:
-        correct_answer = client.puzzle_answers[message.chat.id]
-        user_answer = message.text.strip().lower()
-
-        if user_answer == correct_answer:
-            await message.reply_text("✅ Correct! Well done! 🎉")
-            del client.puzzle_answers[message.chat.id]  # Remove the answered puzzle
-        else:
-            await message.reply_text("❌ Incorrect! Try again!")
-    else:
-        await message.reply_text("⚠ No active puzzle! Use `/puzzle` to start a new one.")
+@Client.on_message(filters.text & filters.reply)
+async def check_song_quiz_answer(client, message):
+    replied = message.reply_to_message.text
+    for song, hint in SONG_QUIZ.items():
+        if hint in replied and message.text.lower() == song.lower():
+            return await message.reply_text("✅ Correct! You guessed the song! 🎵")
+    
+    await message.reply_text("❌ Wrong! Try again.")
