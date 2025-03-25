@@ -1,0 +1,69 @@
+{
+  "users": {
+    "user1": {
+      "username": "user1",
+      "user_id": 123456789,
+      "liked_songs": [
+        "track1",
+        "track3"
+      ],
+      "disliked_songs": [
+        "track2"
+      ],
+      "playlists": {
+        "playlist1": {
+          "name": "Chill Playlist",
+          "songs": [
+            "track1",
+            "track4"
+          ]
+        },
+        "playlist2": {
+          "name": "Workout Playlist",
+          "songs": [
+            "track2",
+            "track5"
+          ]
+        }
+      },
+      "preferences": {
+        "volume": 80,
+        "auto_play_next": true,
+        "lyrics_sync": true,
+        "night_mode": false
+      },
+      "queue": [
+        "track2",
+        "track3"
+      ]
+    },
+    "user2": {
+      "username": "user2",
+      "user_id": 987654321,
+      "liked_songs": [
+        "track4",
+        "track5"
+      ],
+      "disliked_songs": [],
+      "playlists": {
+        "playlist1": {
+          "name": "Favorites",
+          "songs": [
+            "track1",
+            "track3"
+          ]
+        }
+      },
+      "preferences": {
+        "volume": 70,
+        "auto_play_next": false,
+        "lyrics_sync": false,
+        "night_mode": true
+      },
+      "queue": [
+        "track5",
+        "track2"
+      ]
+    }
+  }
+}
