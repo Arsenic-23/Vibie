@@ -1,4 +1,13 @@
-pyrogram
-tgcrypto
-python-dotenv
-openai
+python-telegram-bot==20.0  # Library for Telegram bot API
+yt-dlp==2023.03.04  # For downloading music from YouTube and other platforms (alternative to youtube-dl)
+ffmpeg-python==0.2.0  # For interacting with FFmpeg to handle audio and video
+python-dotenv==0.21.0  # For handling environment variables
+aiohttp==3.8.1  # For asynchronous HTTP requests
+apscheduler==3.8.1  # For scheduling tasks (e.g., song playback)
+requests==2.28.1  # For making HTTP requests to fetch song information, lyrics, etc.
+pydub==0.25.1  # Audio file manipulation (if needed for any additional audio processing)
+pillow==9.0.1  # For handling images (e.g., song thumbnails)
+musixmatch==1.0.0  # For fetching song lyrics (or you can use another lyrics API)
+pyYAML==6.0  # For parsing YAML files, if needed for configuration (optional)
+psutil==5.9.0  # For handling system processes (used in case of managing bot's process, resource monitoring)
+loguru==0.6.0  # For advanced logging
