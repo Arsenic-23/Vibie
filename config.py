@@ -1,7 +1,7 @@
 import os
 
 # Telegram Bot Configuration
-API_TOKEN = "YOUR_BOT_API_TOKEN"  # Replace with your Telegram Bot API token
+API_TOKEN = "7575567291:AAH8yaPhRofVfAFrDPiEqddelnqszgQ5Ru8"  # Replace with your Telegram Bot API token
 
 # Admins and Authorized Users
 ADMINS = [123456789, 987654321]  # Replace with your admin user IDs
