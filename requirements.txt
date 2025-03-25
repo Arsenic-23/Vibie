@@ -1,26 +1,15 @@
-# Telegram Bot API
-python-telegram-bot==13.15  # Use 20.x+ if async support is needed
-
-# Music & Streaming
-yt-dlp==2023.03.04  # Downloads music/videos
-ffmpeg-python==0.2.0  # Interacts with FFmpeg (optional, needs system ffmpeg)
-pydub==0.25.1  # Audio processing (requires system ffmpeg)
-
-# Web Requests & APIs
-requests==2.28.1  # Fetches song details, lyrics, etc.
-aiohttp==3.8.1  # Async HTTP requests
-lyricsgenius==3.0.1  # Fetch lyrics from Genius API
-
-# Configuration & Logging
-python-dotenv==0.21.0  # Handles environment variables
-loguru==0.6.0  # Advanced logging
-pyYAML==6.0  # (Optional) If using YAML-based config
-
-# Scheduling (Optional)
-apscheduler==3.8.1  # For scheduling tasks (optional)
-
-# System Utilities
-psutil==5.9.0  # Monitor bot resource usage (optional)
-
-# Image Handling
-pillow==9.0.1  # Handles images (thumbnails, etc.)
+python-telegram-bot==13.15  
+yt-dlp==2023.03.04  
+ffmpeg-python==0.2.0  
+pydub==0.25.1  
+requests==2.28.1  
+aiohttp==3.8.1  
+lyricsgenius==3.0.1  
+python-dotenv==0.21.0  
+loguru==0.6.0  
+pyYAML==6.0  
+apscheduler==3.8.1  
+psutil==5.9.0  
+pillow==9.0.1  
+pyrogram  
+pytgcalls
