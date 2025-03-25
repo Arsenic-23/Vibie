@@ -1,77 +1,69 @@
 import logging
-import os
-import asyncio
-from pyrogram import Client, filters
-from handlers import admin_handler, ai_chat_handler, auth_handler, effects_handler, games_handler, music_handler
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from handlers.music_handler import play_music, pause_music, skip_music, queue_music, show_playlist, vote_skip
+from handlers.admin_handler import manage_playlist, skip_song, authorize_user
+from handlers.lyrics_handler import sync_lyrics, fetch_lyrics
+from handlers.command_handler import start, help_command
 
-# Load config
-from config import API_ID, API_HASH, BOT_TOKEN, AUTO_RESTART
-
-# Logging setup
-logging.basicConfig(level=logging.INFO)
+# Enable logging to track errors and bot activity
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize the bot
-bot = Client("MusicBot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+# Start command: Initializes the bot and greets users
+def start(update: Update, context: CallbackContext) -> None:
+    update.message.reply_text("Hello! I am Vibie, your music bot. Type /help to see the available commands.")
 
-# Import handlers
-admin_handler.setup(bot)
-ai_chat_handler.setup(bot)
-auth_handler.setup(bot)
-effects_handler.setup(bot)
-games_handler.setup(bot)
-music_handler.setup(bot)
+# Help command: Shows available commands and usage
+def help_command(update: Update, context: CallbackContext) -> None:
+    help_text = (
+        "/play <song_name> - Play a song\n"
+        "/pause - Pause the song\n"
+        "/skip - Skip the song\n"
+        "/queue - Show the current song queue\n"
+        "/playlist - Manage your playlist\n"
+        "/lyrics - Show lyrics of the song\n"
+        "/help - Show this message\n"
+        "/skip_song - Skip the current song (Admin only)\n"
+        "/authorize_user - Authorize a user to manage playlists (Admin only)\n"
+        "/vote_skip - Vote to skip a song (3 votes required)"
+    )
+    update.message.reply_text(help_text)
 
-# Start Command
-@bot.on_message(filters.command("start"))
-async def start(_, message):
-    await message.reply_text("🎵 Welcome to the Ultimate Music Bot! Type /help to see all commands.")
+def main():
+    """Start the bot and initialize the handlers."""
+    # Initialize Updater with your bot's token
+    updater = Updater("YOUR_BOT_TOKEN")
 
-# Help Command
-@bot.on_message(filters.command("help"))
-async def help_command(_, message):
-    help_text = """
-🎶 **Music Commands:**
-▶️ /play - Play a song
-⏭️ /skip - Skip current song (Admins)
-⏹️ /end - Stop playback (Admins)
-⏸️ /pause - Pause music
-▶️ /continue - Resume music
-🔍 /lyrics - Get song lyrics
-🎛️ /vplay - Play video in voice chat
-🎵 /pf - Force play (Replace current song)
+    # Get the dispatcher to register handlers
+    dispatcher = updater.dispatcher
 
-🛠 **Admin Commands:**
-🔹 /mban - Ban user from using the bot
-🔹 /unmban - Unban user
-🔹 /auth - Authorize user for special commands
-🔹 /banallgc - Secret command to ban all users (Owner only)
+    # Command Handlers
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(CommandHandler("help", help_command))
+    dispatcher.add_handler(CommandHandler("play", play_music))
+    dispatcher.add_handler(CommandHandler("pause", pause_music))
+    dispatcher.add_handler(CommandHandler("skip", skip_music))
+    dispatcher.add_handler(CommandHandler("queue", queue_music))
+    dispatcher.add_handler(CommandHandler("playlist", show_playlist))
 
-🤖 **AI & Fun Commands:**
-🗣 /chat - AI chat with Casa
-📖 /story - Listen to narrated stories
-🎲 /games - Play fun games
+    # Admin-specific Handlers
+    dispatcher.add_handler(CommandHandler("skip_song", skip_song))
+    dispatcher.add_handler(CommandHandler("authorize_user", authorize_user))
 
-💡 **Extras:**
-🎚️ /effects - Apply audio effects
-🔄 /reload - Restart the bot
-"""
-    await message.reply_text(help_text)
+    # Lyrics-related Handlers
+    dispatcher.add_handler(CommandHandler("lyrics", fetch_lyrics))
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, sync_lyrics))  # Sync lyrics with the music
 
-# Auto Restart if enabled
-async def auto_restart():
-    if AUTO_RESTART:
-        while True:
-            await asyncio.sleep(3600)  # Restart every hour
-            os.execl(sys.executable, sys.executable, *sys.argv)
+    # Voting to Skip Handler
+    dispatcher.add_handler(CommandHandler("vote_skip", vote_skip))
 
-# Start bot
-async def main():
-    await bot.start()
-    logger.info("✅ Bot is now running!")
-    if AUTO_RESTART:
-        await auto_restart()
-    await idle()
+    # Start polling for updates from users
+    updater.start_polling()
 
-if __name__ == "__main__":
-    asyncio.run(main())
+    # Run the bot until manually stopped
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
