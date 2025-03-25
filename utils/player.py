@@ -1,117 +1,72 @@
 import os
-import subprocess
 import logging
 import asyncio
-from config import DOWNLOAD_DIR
-from utils.downloader import download_song
-from utils.lyrics_handler import get_lyrics
-from asyncio import TimeoutError
+from pytgcalls import PyTgCalls, StreamType
+from pytgcalls.types import AudioPiped
+from config import API_ID, API_HASH, BOT_TOKEN
+from pyrogram import Client
 
-# Set up logging
+# Initialize Pyrogram client and PyTgCalls
+app = Client("VibieMusicBot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+pytgcalls = PyTgCalls(app)
+
+# Logging setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Define the music cache folder and file name for the currently playing song
-CACHE_DIR = './cache'
-CURRENT_SONG_FILE = os.path.join(CACHE_DIR, 'current_song.mp3')
+# Dictionary to manage chat-specific playback
+playing_chats = {}
 
-# Ensure the cache directory exists
-if not os.path.exists(CACHE_DIR):
-    os.makedirs(CACHE_DIR)
+async def start_pytgcalls():
+    """Start the PyTgCalls client"""
+    await app.start()
+    await pytgcalls.start()
 
-# Global variables for playback control
-is_playing = False
-current_process = None
+async def stop_pytgcalls():
+    """Stop PyTgCalls"""
+    await pytgcalls.stop()
+    await app.stop()
 
-def play_audio(song_file: str) -> None:
-    """Plays the audio file using MPV and FFmpeg."""
-    global current_process, is_playing
-
-    if is_playing:
-        logger.info("A song is already playing.")
-        return
-    
+async def play_audio(chat_id: int, song_file: str):
+    """Plays the song in the Telegram voice chat."""
     try:
-        # Start the FFmpeg/MPV process to play the audio in the voice chat
-        logger.info(f"Playing song: {song_file}")
-        current_process = subprocess.Popen(
-            ['ffmpeg', '-re', '-i', song_file, '-vn', '-acodec', 'libmp3lame', '-f', 'mp3', '-'],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+        if chat_id in playing_chats:
+            await pytgcalls.leave_group_call(chat_id)
+
+        await pytgcalls.join_group_call(
+            chat_id,
+            AudioPiped(song_file, stream_type=StreamType().local_stream),
         )
-        is_playing = True
-        logger.info(f"Playback started: {song_file}")
-    except Exception as e:
-        logger.error(f"Error while playing audio: {e}")
-        is_playing = False
+        playing_chats[chat_id] = song_file
+        logger.info(f"Playing {song_file} in chat {chat_id}")
 
-def stop_audio() -> None:
+    except Exception as e:
+        logger.error(f"Error playing audio: {e}")
+
+async def stop_audio(chat_id: int):
     """Stops the currently playing song."""
-    global current_process, is_playing
-
-    if not is_playing:
-        logger.info("No song is currently playing.")
-        return
-    
     try:
-        current_process.terminate()
-        is_playing = False
-        logger.info("Playback stopped.")
+        if chat_id in playing_chats:
+            await pytgcalls.leave_group_call(chat_id)
+            del playing_chats[chat_id]
+            logger.info(f"Stopped playback in chat {chat_id}")
+        else:
+            logger.info(f"No active playback in chat {chat_id}")
+
     except Exception as e:
-        logger.error(f"Error stopping playback: {e}")
+        logger.error(f"Error stopping audio: {e}")
 
-def pause_audio() -> None:
-    """Pauses the currently playing song."""
-    global current_process, is_playing
+async def pause_audio(chat_id: int):
+    """Pauses the audio (leaves the chat)."""
+    await stop_audio(chat_id)
 
-    if not is_playing:
-        logger.info("No song is currently playing.")
-        return
-    
-    try:
-        current_process.send_signal(subprocess.signal.SIGSTOP)
-        is_playing = False
-        logger.info("Playback paused.")
-    except Exception as e:
-        logger.error(f"Error pausing playback: {e}")
+async def resume_audio(chat_id: int, song_file: str):
+    """Resumes audio playback by replaying the last song."""
+    await play_audio(chat_id, song_file)
 
-def resume_audio() -> None:
-    """Resumes the currently paused song."""
-    global current_process, is_playing
+async def skip_audio(chat_id: int):
+    """Skips the current song and stops playback."""
+    await stop_audio(chat_id)
 
-    if is_playing:
-        logger.info("Song is already playing.")
-        return
-    
-    try:
-        current_process.send_signal(subprocess.signal.SIGCONT)
-        is_playing = True
-        logger.info("Playback resumed.")
-    except Exception as e:
-        logger.error(f"Error resuming playback: {e}")
-
-def skip_audio() -> None:
-    """Skips the currently playing song."""
-    stop_audio()
-    logger.info("Skipping to next song.")
-    # Here, you could integrate a feature for adding the next song to the queue.
-    # For now, simply stopping playback is sufficient.
-
-async def fetch_and_play_song(query: str) -> str:
-    """Fetch and play a song based on a search query."""
-    song_file = download_song(query)
-    if song_file:
-        play_audio(song_file)
-        return song_file
-    else:
-        logger.error("Error downloading the song.")
-        return None
-
-async def get_current_lyrics(song_title: str) -> str:
-    """Fetches and synchronizes the lyrics with the current song."""
-    try:
-        lyrics = await get_lyrics(song_title)
-        return lyrics
-    except TimeoutError:
-        logger.error("Error fetching lyrics: Request timed out.")
-        return "Unable to fetch lyrics."
+# Start PyTgCalls when the script starts
+asyncio.run(start_pytgcalls())
