@@ -1,0 +1,67 @@
+{
+  "current_song": {
+    "song_id": "track1",
+    "title": "Example Song",
+    "artist": "Artist Name",
+    "duration": 180,
+    "url": "https://example.com/song.mp3",
+    "thumbnail": "https://example.com/thumbnail.jpg",
+    "lyrics": "Lyrics will go here..."
+  },
+  "queue": [
+    {
+      "song_id": "track2",
+      "title": "Next Song",
+      "artist": "Artist Name",
+      "duration": 210,
+      "url": "https://example.com/song2.mp3",
+      "thumbnail": "https://example.com/thumbnail2.jpg",
+      "lyrics": "Lyrics for next song..."
+    },
+    {
+      "song_id": "track3",
+      "title": "Third Song",
+      "artist": "Artist Name",
+      "duration": 200,
+      "url": "https://example.com/song3.mp3",
+      "thumbnail": "https://example.com/thumbnail3.jpg",
+      "lyrics": "Lyrics for third song..."
+    }
+  ],
+  "playlists": {
+    "playlist1": {
+      "name": "My Playlist",
+      "songs": [
+        {
+          "song_id": "track1",
+          "title": "Example Song",
+          "artist": "Artist Name",
+          "duration": 180,
+          "url": "https://example.com/song.mp3",
+          "thumbnail": "https://example.com/thumbnail.jpg",
+          "lyrics": "Lyrics for this song..."
+        },
+        {
+          "song_id": "track2",
+          "title": "Next Song",
+          "artist": "Artist Name",
+          "duration": 210,
+          "url": "https://example.com/song2.mp3",
+          "thumbnail": "https://example.com/thumbnail2.jpg",
+          "lyrics": "Lyrics for next song..."
+        }
+      ]
+    }
+  },
+  "user_preferences": {
+    "user1": {
+      "liked_songs": [
+        "track1",
+        "track3"
+      ],
+      "disliked_songs": [
+        "track2"
+      ]
+    }
+  }
+}
