@@ -2,7 +2,7 @@ import logging
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
 from utils.player import MusicPlayer
-from database.playlist_data import get_admins, add_song_to_playlist, remove_song_from_playlist, set_active_playlist, get_playlist
+from database.playlist_data import get_admins, add_song_to_playlist, remove_song_from_playlist, set_active_playlist as db_set_active_playlist, get_playlist
 
 # Initialize the music player
 music_player = MusicPlayer()
@@ -18,8 +18,8 @@ async def skip_song(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
 
     if user_id in get_admins(chat_id):
-        if music_player.skip(chat_id):
-            await update.message.reply_text("🎵 Song skipped!")
+        if await music_player.skip(chat_id):
+            await update.message.reply_text("🎵 *Song skipped!*", parse_mode="Markdown")
         else:
             await update.message.reply_text("⚠️ No more songs in the queue.")
     else:
@@ -32,10 +32,10 @@ async def add_to_playlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
 
     if user_id in get_admins(chat_id):
-        song_name = " ".join(context.args)
+        song_name = " ".join(context.args) if context.args else None
         if song_name:
             add_song_to_playlist(chat_id, song_name)
-            await update.message.reply_text(f"✅ Added **{song_name}** to the playlist.")
+            await update.message.reply_text(f"✅ *Added:* `{song_name}` *to the playlist.*", parse_mode="Markdown")
         else:
             await update.message.reply_text("⚠️ Please provide a song name.")
     else:
@@ -48,12 +48,12 @@ async def remove_from_playlist(update: Update, context: ContextTypes.DEFAULT_TYP
     user_id = update.message.from_user.id
 
     if user_id in get_admins(chat_id):
-        song_name = " ".join(context.args)
+        song_name = " ".join(context.args) if context.args else None
         if song_name:
             if remove_song_from_playlist(chat_id, song_name):
-                await update.message.reply_text(f"🗑 Removed **{song_name}** from the playlist.")
+                await update.message.reply_text(f"🗑 *Removed:* `{song_name}` *from the playlist.*", parse_mode="Markdown")
             else:
-                await update.message.reply_text(f"⚠️ Song **{song_name}** not found in the playlist.")
+                await update.message.reply_text(f"⚠️ Song `{song_name}` not found in the playlist.")
         else:
             await update.message.reply_text("⚠️ Please provide a song name.")
     else:
@@ -66,12 +66,12 @@ async def set_active_playlist(update: Update, context: ContextTypes.DEFAULT_TYPE
     user_id = update.message.from_user.id
 
     if user_id in get_admins(chat_id):
-        playlist_name = " ".join(context.args)
+        playlist_name = " ".join(context.args) if context.args else None
         if playlist_name:
-            if set_active_playlist(chat_id, playlist_name):
-                await update.message.reply_text(f"✅ Activated playlist: **{playlist_name}**")
+            if db_set_active_playlist(chat_id, playlist_name):
+                await update.message.reply_text(f"✅ *Activated playlist:* `{playlist_name}`", parse_mode="Markdown")
             else:
-                await update.message.reply_text(f"⚠️ Playlist **{playlist_name}** not found.")
+                await update.message.reply_text(f"⚠️ Playlist `{playlist_name}` not found.")
         else:
             await update.message.reply_text("⚠️ Please provide a playlist name.")
     else:
@@ -87,7 +87,7 @@ async def view_playlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
         playlist = get_playlist(chat_id)
         if playlist:
             playlist_text = "\n".join([f"🎶 {idx + 1}. {song}" for idx, song in enumerate(playlist)])
-            await update.message.reply_text(f"🎵 **Current Playlist:**\n{playlist_text}")
+            await update.message.reply_text(f"🎵 *Current Playlist:*\n{playlist_text}", parse_mode="Markdown")
         else:
             await update.message.reply_text("📭 The playlist is empty.")
     else:
@@ -97,14 +97,14 @@ async def view_playlist(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def adminhelp(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Admin command to display a list of admin-specific commands."""
     help_text = (
-        "🎵 **Admin Commands:**\n"
-        "/skip - Skip the current song\n"
-        "/add_to_playlist [song_name] - Add a song to the playlist\n"
-        "/remove_from_playlist [song_name] - Remove a song from the playlist\n"
-        "/set_active_playlist [playlist_name] - Set the active playlist\n"
-        "/view_playlist - View the current playlist"
+        "🎵 *Admin Commands:*\n"
+        "✅ `/skip` - Skip the current song\n"
+        "✅ `/add_to_playlist [song_name]` - Add a song to the playlist\n"
+        "✅ `/remove_from_playlist [song_name]` - Remove a song from the playlist\n"
+        "✅ `/set_active_playlist [playlist_name]` - Set the active playlist\n"
+        "✅ `/view_playlist` - View the current playlist"
     )
-    await update.message.reply_text(help_text)
+    await update.message.reply_text(help_text, parse_mode="Markdown")
 
 # Add admin commands to application
 def add_admin_handlers(application):
