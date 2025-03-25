@@ -1,32 +1,55 @@
 import os
-from dotenv import load_dotenv
 
-# Load environment variables from .env file (if exists)
-load_dotenv()
+# Telegram Bot Configuration
+API_TOKEN = "YOUR_BOT_API_TOKEN"  # Replace with your Telegram Bot API token
 
-# Telegram API credentials
-API_ID = int(os.getenv("API_ID", "123456"))  # Replace with your API ID
-API_HASH = os.getenv("API_HASH", "your_api_hash")  # Replace with your API Hash
-BOT_TOKEN = os.getenv("BOT_TOKEN", "your_bot_token")
+# Admins and Authorized Users
+ADMINS = [123456789, 987654321]  # Replace with your admin user IDs
+AUTHORIZED_USERS = [123456789]  # Replace with authorized users for playlist management
 
-# MongoDB for storing data
-MONGO_URI = os.getenv("MONGO_URI", "your_mongodb_uri")
+# Music Configuration
+MUSIC_DIR = "music"  # Directory for storing downloaded music files
+CACHE_DIR = "cache"   # Temporary cache for ongoing music streams
 
-# OpenAI API for AI chat & features
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "your_openai_api_key")
+# YouTube Download Configuration (for downloading music)
+YTDL_OPTIONS = {
+    'format': 'bestaudio/best',
+    'extractaudio': True,
+    'outtmpl': MUSIC_DIR + '/%(id)s.%(ext)s',
+    'restrictfilenames': True,
+    'noplaylist': True,
+    'quiet': True
+}
 
-# Admin Users
-AUTH_USERS = [int(user) for user in os.getenv("AUTH_USERS", "").split() if user.isdigit()]
+# FFmpeg Configuration (for playing music)
+FFMPEG_BIN = "/usr/bin/ffmpeg"  # Path to FFmpeg binary, adjust if necessary
 
-# Music Settings
-MAX_QUEUE_SIZE = 50  # Max number of songs in queue per chat
+# MPV Player Configuration
+MPV_BIN = "/usr/bin/mpv"  # Path to MPV player binary, adjust if necessary
 
-# Restart Settings
-AUTO_RESTART = os.getenv("AUTO_RESTART", "True").lower() == "true"
+# Lyrics Sync Configuration
+LYRICS_SYNC = True  # Set to True to enable lyrics sync
 
-# Debug Mode
-DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() == "true"
+# Bot Settings
+BOT_NAME = "Vibie"
+LOGGING_LEVEL = "INFO"  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+LOG_FILE = "bot.log"  # Log file for the bot
 
-# Function to check if user is admin
-def is_admin(user_id):
-    return user_id in AUTH_USERS
+# Spotify/YouTube API Keys (for fetching songs and lyrics)
+SPOTIFY_API_KEY = "YOUR_SPOTIFY_API_KEY"  # Replace with your Spotify API key
+YOUTUBE_API_KEY = "YOUR_YOUTUBE_API_KEY"  # Replace with your YouTube API key
+
+# Enable/Disable Features
+ENABLE_LYRICS = True  # Set to False if you don't want lyrics features
+ENABLE_PLAYLIST = True  # Set to False if you don't want playlist management
+ENABLE_VOTING = True  # Enable/disable song voting system
+
+# Bot Polling and Server Settings
+POLLING_INTERVAL = 5  # Time in seconds between each polling request
+MAX_PLAYLIST_LENGTH = 50  # Max number of songs allowed in a playlist
+
+# Other Configurations
+SONG_THUMBNAILS_DIR = "assets/song_thumbnails"  # Directory to store song thumbnails
+LYRICS_DATA_FILE = "lyrics/lyrics_data.json"  # Lyrics data storage file
+PLAYLIST_DATA_FILE = "database/playlist_data.json"  # Playlist data file
+USER_DATA_FILE = "database/user_data.json"  # User data storage file
