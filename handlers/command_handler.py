@@ -6,6 +6,7 @@ from config import BOT_NAME
 from utils.player import MusicPlayer
 from database.user_data import get_user_data, save_user_data
 from database.playlist_data import get_queue
+from utils.lyrics import get_lyrics_for_song
 
 # Initialize the music player
 music_player = MusicPlayer()
@@ -15,7 +16,7 @@ logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # Start Command
-def start(update: Update, context: CallbackContext):
+async def start(update: Update, context: CallbackContext):
     """Send a welcome message when the /start command is used."""
     user = update.message.from_user
     user_id = user.id
@@ -28,25 +29,26 @@ def start(update: Update, context: CallbackContext):
 
     # Send welcome message
     welcome_message = f"Hello, {user.first_name}! Welcome to {BOT_NAME}, your personal music bot."
-    update.message.reply_text(welcome_message)
+    await update.message.reply_text(welcome_message)
 
 # Info Command
-def info(update: Update, context: CallbackContext):
+async def info(update: Update, context: CallbackContext):
     """Send bot information when the /info command is used."""
     info_message = (
         f"Welcome to {BOT_NAME}!\n\n"
         "I am your personal music bot that lets you play music in Telegram voice chats.\n"
-        "Commands available:\n"
-        "/start - Start interacting with the bot\n"
-        "/help - Get a list of all commands\n"
-        "/info - Get information about the bot\n"
-        "/sync_lyrics - Sync lyrics with the song playing in the voice chat\n"
-        "/toggle_lyrics_sync - Enable or disable lyrics sync (Admin only)"
+        "🎵 *Features:*\n"
+        "- High-quality voice chat streaming\n"
+        "- Lyrics sync in real-time\n"
+        "- Custom playlists\n"
+        "- Admin-only mode\n"
+        "- Voting system for song skipping\n\n"
+        "Use /help to see available commands."
     )
-    update.message.reply_text(info_message)
+    await update.message.reply_text(info_message, parse_mode="Markdown")
 
 # Help Command
-def help_command(update: Update, context: CallbackContext):
+async def help_command(update: Update, context: CallbackContext):
     """Send the help message when the /help command is used."""
     help_message = (
         "Here are the available commands:\n\n"
@@ -65,10 +67,10 @@ def help_command(update: Update, context: CallbackContext):
         "/manage_playlists - Manage playlists (Admins only)\n\n"
         "For more information, type /info."
     )
-    update.message.reply_text(help_message, parse_mode="Markdown")
+    await update.message.reply_text(help_message, parse_mode="Markdown")
 
 # Queue Command
-def queue(update: Update, context: CallbackContext):
+async def queue(update: Update, context: CallbackContext):
     """Show the current song queue."""
     chat_id = update.message.chat_id
     song_queue = get_queue(chat_id)
@@ -80,20 +82,20 @@ def queue(update: Update, context: CallbackContext):
     else:
         queue_message = "🚫 The song queue is empty. Use /play to add songs."
     
-    update.message.reply_text(queue_message, parse_mode="Markdown")
+    await update.message.reply_text(queue_message, parse_mode="Markdown")
 
 # Stop Command
-def stop(update: Update, context: CallbackContext):
+async def stop(update: Update, context: CallbackContext):
     """Stop the music and disconnect the bot from the voice chat."""
     chat_id = update.message.chat_id
-    music_player.stop_music(chat_id)
-    update.message.reply_text("⏹ Music stopped. Leaving the voice chat.")
+    await music_player.stop_music(chat_id)
+    await update.message.reply_text("⏹ Music stopped. Leaving the voice chat.")
 
 # Current Song Command
-def current_song(update: Update, context: CallbackContext):
+async def current_song(update: Update, context: CallbackContext):
     """Show details of the currently playing song."""
     chat_id = update.message.chat_id
-    current_song_details = music_player.get_current_song(chat_id)
+    current_song_details = await music_player.get_current_song(chat_id)
 
     if current_song_details:
         song_info = (
@@ -105,7 +107,26 @@ def current_song(update: Update, context: CallbackContext):
     else:
         song_info = "🚫 No song is currently playing."
     
-    update.message.reply_text(song_info, parse_mode="Markdown")
+    await update.message.reply_text(song_info, parse_mode="Markdown")
+
+# Lyrics Command
+async def lyrics(update: Update, context: CallbackContext):
+    """Fetch and display lyrics for the current song."""
+    chat_id = update.message.chat_id
+    current_song = await music_player.get_current_song(chat_id)
+
+    if current_song:
+        song_name = current_song['title']
+        lyrics_text = get_lyrics_for_song(song_name)
+        
+        if lyrics_text:
+            lyrics_message = f"🎵 *Lyrics for {song_name}:*\n\n{lyrics_text}"
+        else:
+            lyrics_message = "Lyrics not found for this song."
+    else:
+        lyrics_message = "No song is currently playing."
+    
+    await update.message.reply_text(lyrics_message, parse_mode="Markdown")
 
 # Add command handlers to the bot
 def add_command_handlers(dispatcher):
@@ -116,3 +137,4 @@ def add_command_handlers(dispatcher):
     dispatcher.add_handler(CommandHandler("queue", queue))
     dispatcher.add_handler(CommandHandler("stop", stop))
     dispatcher.add_handler(CommandHandler("current_song", current_song))
+    dispatcher.add_handler(CommandHandler("lyrics", lyrics))
