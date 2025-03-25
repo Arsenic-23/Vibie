@@ -4,7 +4,7 @@ import os
 API_TOKEN = "7575567291:AAH8yaPhRofVfAFrDPiEqddelnqszgQ5Ru8"  # Replace with your Telegram Bot API token
 
 # Admins and Authorized Users
-ADMINS = [123456789, 987654321]  # Replace with your admin user IDs
+ADMINS = [7212032106]  # Replace with your admin user IDs
 AUTHORIZED_USERS = [123456789]  # Replace with authorized users for playlist management
 
 # Music Configuration
