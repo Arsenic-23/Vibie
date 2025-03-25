@@ -1,0 +1,37 @@
+{
+  "songs": {
+    "Shape of You": {
+      "artist": "Ed Sheeran",
+      "lyrics": [
+        "The club isn't the best place to find a lover",
+        "So the bar is where I go",
+        "Me and my friends at the table doing shots",
+        "Drinking faster and then we talk slow"
+      ],
+      "duration": 233,
+      "timestamps": [0, 5, 10, 15]
+    },
+    "Blinding Lights": {
+      "artist": "The Weeknd",
+      "lyrics": [
+        "I've been tryna call",
+        "I've been on my own for long enough",
+        "Maybe you can show me how to love",
+        "Maybe"
+      ],
+      "duration": 200,
+      "timestamps": [0, 4, 9, 13]
+    },
+    "Believer": {
+      "artist": "Imagine Dragons",
+      "lyrics": [
+        "First things first",
+        "I'ma say all the words inside my head",
+        "I'm fired up and tired of the way that things have been",
+        "The way that things have been, oh ooh"
+      ],
+      "duration": 204,
+      "timestamps": [0, 6, 12, 18]
+    }
+  }
+}
