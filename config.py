@@ -39,7 +39,7 @@ LOG_FILE = "bot.log"
 SPOTIFY_API_KEY = os.getenv("SPOTIFY_API_KEY", "your_spotify_api_key_here")  
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "your_youtube_api_key_here")  
 
-SONG_THUMBNAILS_DIR = "assets/song_thumbnails"  
+SONG_THUMBNAILS_DIR = "assets"  
 LYRICS_DATA_FILE = "lyrics/lyrics_data.json"  
 PLAYLIST_DATA_FILE = "database/playlist_data.json"  
 USER_DATA_FILE = "database/user_data.json"
