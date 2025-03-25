@@ -22,39 +22,34 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "/queue - Show the song queue\n"
         "/stop - Stop music playback\n"
         "/lyrics <song_name> - Get song lyrics\n"
-        "/authorize <user_id> - Authorize a user to control the bot\n"
-        "/deauthorize <user_id> - Remove authorization\n"
-        "/adminhelp - Show admin commands\n"
+        "/authorize <user_id> - Grant admin permissions\n"
+        "/deauthorize <user_id> - Remove admin permissions\n"
     )
     await update.message.reply_text(help_text)
 
-async def main():
-    """Initialize the bot and PyTgCalls."""
-    application = Application.builder().token(BOT_TOKEN).build()
+def main():
+    """Start the bot and register command handlers."""
+    app = Application.builder().token(BOT_TOKEN).build()
 
     # Register command handlers
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("play", play))
-    application.add_handler(CommandHandler("pause", pause))
-    application.add_handler(CommandHandler("resume", resume))
-    application.add_handler(CommandHandler("skip", skip))
-    application.add_handler(CommandHandler("queue", queue))
-    application.add_handler(CommandHandler("stop", stop))
-    application.add_handler(CommandHandler("lyrics", get_lyrics))
-    application.add_handler(CommandHandler("authorize", authorize_user))
-    application.add_handler(CommandHandler("deauthorize", deauthorize_user))
-    application.add_handler(CommandHandler("adminhelp", admin_help))
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("help", help_command))
+    app.add_handler(CommandHandler("play", play))
+    app.add_handler(CommandHandler("pause", pause))
+    app.add_handler(CommandHandler("resume", resume))
+    app.add_handler(CommandHandler("skip", skip))
+    app.add_handler(CommandHandler("queue", queue))
+    app.add_handler(CommandHandler("stop", stop))
+    app.add_handler(CommandHandler("lyrics", get_lyrics))
+    app.add_handler(CommandHandler("authorize", authorize_user))
+    app.add_handler(CommandHandler("deauthorize", deauthorize_user))
 
-    # Start Pyrogram client for PyTgCalls
-    await app.start()
+    # Start PyTgCalls for voice functionality
+    asyncio.run(start_pytgcalls())
 
-    # Start PyTgCalls
-    await start_pytgcalls()
+    # Start the bot
+    logger.info("Bot is running...")
+    app.run_polling()
 
-    logger.info("🚀 Vibie Bot is now running...")
-    await application.run_polling()
-
-# Run the bot with asyncio
-if __name__ == '__main__':
-    asyncio.run(main())
+if __name__ == "__main__":
+    main()
