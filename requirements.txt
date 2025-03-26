@@ -14,4 +14,4 @@ psutil==5.9.8
 pillow==10.3.0  # Updated version
 pyrogram==2.0.106
 pytgcalls==2.1.0
-tornado==6.1
+tornado>=6.1,<6.5
