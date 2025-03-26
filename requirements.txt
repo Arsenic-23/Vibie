@@ -13,4 +13,4 @@ apscheduler==3.8.1
 psutil==5.9.8
 pillow==10.3.0  # Updated version
 pyrogram==2.0.106
-pytgcalls==0.9.1
+pytgcalls==2.1.0
