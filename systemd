@@ -1,0 +1,16 @@
+[Unit]
+Description=Telegram Bot Service
+After=network.target
+
+[Service]
+# Path to Python and your bot's main.py
+ExecStart=/usr/bin/python3 /path/to/Vibie-main/main.py
+# Set the working directory to your bot folder
+WorkingDirectory=/path/to/Vibie-main
+# Restart on failure
+Restart=always
+# Run as the default user or specify a user
+User=your_username
+
+[Install]
+WantedBy=multi-user.target
