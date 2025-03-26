@@ -10,7 +10,7 @@ lyricsgenius==3.0.1
 python-dotenv==0.21.0
 loguru==0.6.0
 apscheduler==3.8.1
-psutil==5.9.0
+psutil==5.9.8  # Updated version
 pillow==9.0.1
 pyrogram==2.0.106
 pytgcalls==0.9.1
