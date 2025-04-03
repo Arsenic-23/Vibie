@@ -1,4 +1,4 @@
-import os import asyncio from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup from telegram.ext import Application, CommandHandler, CallbackContext from queue_manager import SongQueue from downloader import download_audio from config import BOT_TOKEN, BACKEND_API_URL import requests
+import os import asyncio import requests from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup from telegram.ext import Application, CommandHandler, CallbackContext from queue_manager import SongQueue from downloader import download_audio from config import BOT_TOKEN, BACKEND_API_URL
 
 Initialize bot and queue
 
@@ -30,5 +30,4 @@ Initialize bot application
 app = Application.builder().token(BOT_TOKEN).build() app.add_handler(CommandHandler("start", start)) app.add_handler(CommandHandler("play", play)) app.add_handler(CommandHandler("skip", skip)) app.add_handler(CommandHandler("stop", stop))
 
 if name == "main": print("Bot is running...") app.run_polling()
-
 
